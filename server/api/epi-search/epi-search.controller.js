@@ -20,7 +20,6 @@ exports.index = function(req, res) {
   openFDA.getJSON(options,
     function(statusCode, result)
     {
-      console.log("onResult: (" + statusCode + ")" + JSON.stringify(result));
       res.statusCode = statusCode;
       res.json(result); //res.send
     });
