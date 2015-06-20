@@ -9,11 +9,18 @@ header#banner.hero-unit
 .container
   .row
     .col-lg-12
-      h1.page-header Sample Search Result for https://api.fda.gov/drug/event.json?search=patient.drug.openfda.pharm_class_epc:"nonsteroidal+anti-inflammatory+drug"&count=patient.reaction.reactionmeddrapt.exact
+      h1.page-header Search for Adverse Reactions By Pharmaceutical Brand
+      form(no-validate).search-form
+        | Brand Name:&nbsp;
+        input(type='text', ng-model='brandname')
+        p
+        input(type='button', ng-click='reset()', value='Reset')
+        input(type='submit', ng-click='search(brandname)', value='Search')
+
       ul.nav.nav-tabs.nav-stacked.col-md-4.col-lg-4.col-sm-6(ng-repeat='reaction in adverseReactions')
         li
-          a(href='#', tooltip='{{reaction.term}}')
-            | term: {{reaction.term}} count: {{reaction.count}}
+          a(href='#', tooltip='{{reaction.time}}')
+            | time: {{reaction.time}} count: {{reaction.count}}
 
 footer.footer
   .container

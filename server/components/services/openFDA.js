@@ -23,6 +23,7 @@ exports.getJSON = function(options, onResult)
 
     res.on('end', function() {
       var obj = JSON.parse(output);
+
       onResult(res.statusCode, obj);
     });
   });
@@ -34,47 +35,20 @@ exports.getJSON = function(options, onResult)
   req.end();
 };
 
-exports.getPath = function(req)
+exports.getPath = function(query)
 {
   //see https://open.fda.gov/api/reference/#query-syntax
+ var field, i, j, len, len1, queryString, ref, ref1, term;
 
-  var query =
-    {
-      search: {
-        fields: [
-          {
-            field:"patient.drug.openfda.pharm_class_epc",
-            terms:[
-              {term:"nonsteroidal anti-inflammatory drug", isExact: "true"}
-            ]
-          }
-        ]
-      },
-      count: {field:"patient.reaction.reactionmeddrapt", isExact: true}
 
-    };
-  var query2 =
-    {
-      search: {
-        fields: [
-          {
-            field:"patient.drug.medicinalproduct",
-            terms:[
-              {term:"nonsteroidal"},
-              {term:"anti-inflammatory"},
-              {term: "drug"}
-            ]
-          }
-        ]
-      }
-    };
-
-  var field, i, j, len, len1, query, queryString, ref, ref1, term;
   queryString = '/drug/event.json?search=';
 
   ref = query.search.fields;
   for (i = 0, len = ref.length; i < len; i++) {
     field = ref[i];
+    if (field.isAnd) {
+      queryString += '+AND+';
+    }
     queryString += field.field;
     queryString += ':';
     ref1 = field.terms;
@@ -88,16 +62,27 @@ exports.getPath = function(req)
       } else {
         queryString += term.term;
       }
+      if (j+1 != len1) {
+        queryString += "+"
+      }
     }
+
+    //if (field.date) {//TODO make dates enterable by client at some point in future
+    //  queryString += '+AND+receivedate:[';
+    //  queryString += field.date.from;
+    //  queryString += '+TO+';
+    //  queryString += field.date.to;
+    //  queryString += ']'
+    //}
+
   }
 
-  if (query.count) {
+  if (query.search.count) {
     queryString += "&count=";
-    queryString += query.count.field;
-    if (query.count.isExact) {
+    queryString += query.search.count.field;
+    if (query.search.count.isExact) {
       queryString += ".exact"
     }
   }
   return queryString;
-  //return '/drug/event.json?search=patient.drug.openfda.pharm_class_epc:"nonsteroidal+anti-inflammatory+drug"&count=patient.reaction.reactionmeddrapt.exact';
 };
