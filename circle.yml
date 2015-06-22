@@ -9,8 +9,8 @@ dependencies:
 
 test:
   override:
-    - docker run -d -p 9200:80 flexion/flexion-ads-18f-response; sleep 10
-    - docker logs -t $(docker ps -a -q)
+    - docker run -d --name=grunt -p 9200:80 flexion/flexion-ads-18f-response; sleep 10
+    - docker logs -t grunt
     - curl --retry 10 --retry-delay 5 -v http://localhost:9200
 
 
