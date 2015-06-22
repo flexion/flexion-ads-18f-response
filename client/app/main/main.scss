@@ -1,3 +1,10 @@
+@import url(http://fonts.googleapis.com/css?family=Open+Sans:400,600);
+
+$font-family-sans-serif:  "Open Sans", sans-serif !default;
+body {
+  font-family: $font-family-sans-serif;
+}
+
 .thing-form {
     margin: 20px 0;
 }
@@ -27,4 +34,42 @@
     padding: 30px 0;
     margin-top: 70px;
     border-top: 1px solid #E5E5E5;
+}
+
+/* navbar */
+.navbar {
+  .logo {
+    background: url(/assets/images/lilys-ribbon.jpg) no-repeat center center;
+    display: block;
+    background-size: 100%;
+    height: 27px;
+    width: 21px;
+    float: left;
+    margin-right: 7px
+  }
+  .navbar-brand {
+    font-size: 1.375em;
+  }
+  .title {
+    color: $brand-primary;
+  }
+  .title__secondary {
+    color: $brand-secondary;
+    font-weight: 600;
+  }
+  .primary {
+    text-align: right;
+    float: right;
+    min-height:50px;
+    li {
+      height: 100%;
+      display: inline-block;
+      float: left;
+      a {
+        min-height: 50px;
+        padding: 15px;
+      }
+    }
+  }
+    
 }
