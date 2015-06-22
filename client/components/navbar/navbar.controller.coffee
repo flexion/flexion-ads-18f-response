@@ -2,9 +2,17 @@
 
 angular.module 'gsfFdaApp'
 .controller 'NavbarCtrl', ($scope, $location) ->
-  $scope.menu = [
+  $scope.menu = [{
     title: 'Home'
-    link: '/'
+    link: '/'},
+    {
+      title: 'About'
+      link: '/about/'
+    },
+    {
+      title: 'Contact'
+      link: '/contact/'
+    }
   ]
   $scope.isCollapsed = true
 
