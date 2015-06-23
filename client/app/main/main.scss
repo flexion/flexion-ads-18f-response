@@ -152,3 +152,21 @@ body *{
     }
   }
 }
+
+/* footer */
+
+.footer {
+  text-align: left;
+  color: $gray-darker;
+  padding: 15px;
+  background: $gray;
+  border: none;
+  p {
+    margin: 5px 0;
+  }
+  small, a {
+    font-size: 14px;
+    margin: 5px 10px;
+  }
+}
+
