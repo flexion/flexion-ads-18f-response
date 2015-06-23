@@ -156,11 +156,14 @@ body *{
 /* footer */
 
 .footer {
-  text-align: left;
+  text-align: center;
   color: $gray-darker;
   padding: 15px;
   background: $gray;
   border: none;
+  @media screen and (min-width: $screen-sm){
+    text-align: left;
+  }
   p {
     margin: 5px 0;
   }
