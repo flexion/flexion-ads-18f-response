@@ -3,7 +3,7 @@ div(ng-include='"components/navbar/navbar.html"')
 div.jumbotron
   div.container.search__group
     h1.search__title Drug Database Search
-    div.search.input-group.input-group-lg
+    form.search.input-group.input-group-lg(name='search__form',method='POST',action='/')
       input#search.search__field.form-control(type='search', name='search')
       span.input-group-btn
         button.search__button.btn.btn-default(type='button')
