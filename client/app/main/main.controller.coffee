@@ -31,7 +31,6 @@ angular.module 'gsfFdaApp'
         count: field: 'receivedate'
 
       $http.get("/api/epi-search/?search=#{JSON.stringify query}").success (adverseReactions) ->
-        console.log(adverseReactions);
         $scope.adverseReactions = adverseReactions.results
 
 
