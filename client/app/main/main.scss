@@ -31,9 +31,6 @@ $brand-tertiary:        $tertiaryColor;
   }
 }
 
-$brand-secondary: #428bca !default;
-
-
 $font-family-sans-serif:  "Open Sans", sans-serif !default;
 body {
   font-family: $font-family-sans-serif;
@@ -232,7 +229,7 @@ a:hover, a:focus {
     background-size: cover;
   }
   h1 {
-    color: $gray-lighter;
+    color: $gray-lightest;
     font-size: 25px;
     @include minMedia($screen-sm){
     font-size: 37px;
@@ -240,8 +237,8 @@ a:hover, a:focus {
   }
   .search__button {
     background: $brand-secondary;
-    color: $gray-lighter;
-    border: 0;
+    color: $gray-lightest;
+    border: 0; 
   }
   .glyphicon {
     font-size: 1.3em;
