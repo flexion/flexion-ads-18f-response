@@ -1,8 +1,23 @@
 @import url(http://fonts.googleapis.com/css?family=Open+Sans:400,600);
 
+@mixin maxMedia($media){
+  @media screen and (max-width: $media){
+    @content;
+  }
+}
+
+@mixin minMedia($media){
+  @media screen and (min-width: $media) {
+    @content;
+  }
+}
+
 $font-family-sans-serif:  "Open Sans", sans-serif !default;
 body {
   font-family: $font-family-sans-serif;
+}
+body *{
+  transition: all ease .2s;
 }
 
 .thing-form {
@@ -38,6 +53,7 @@ body {
 
 /* navbar */
 .navbar {
+  margin-bottom: 5px;
   .logo {
     background: url(/assets/images/lilys-ribbon.jpg) no-repeat center center;
     display: block;
@@ -49,6 +65,12 @@ body {
   }
   .navbar-brand {
     font-size: 1.375em;
+    line-height: 23px;
+    padding-left: 13px;
+    padding-right: 13px;
+    @include minMedia($screen-sm){
+      padding: 15px;
+    } 
   }
   .title {
     color: $brand-primary;
@@ -59,12 +81,19 @@ body {
   }
   .primary {
     text-align: right;
-    float: right;
     min-height:50px;
+    text-align: center;
+    @include minMedia($screen-xs){
+      float: right;
+    }
     li {
       height: 100%;
       display: inline-block;
-      float: left;
+      width: 33%;
+      @include minMedia($screen-xs){
+        width: auto;
+        float: left;
+      }
       a {
         min-height: 50px;
         padding: 15px;
@@ -72,4 +101,42 @@ body {
     }
   }
     
+}
+
+/* jumbotron/Search */
+.jumbotron {
+  background: url(/assets/images/hero-mobile.jpg) center center no-repeat
+  $brand-primary;
+  background-size: cover;
+  min-height: 294px;
+  overflow: hidden;
+  @include minMedia($screen-xs){
+    background: url(/assets/images/hero_image_desktop.jpg) center center no-repeat
+    $brand-primary;
+    background-size: cover;
+  }
+  h1 {
+    color: $gray-lightest;
+    font-size: 25px;
+    @include minMedia($screen-sm){
+    font-size: 37px;
+    }
+  }
+  .search__button {
+    background: $brand-secondary;
+    color: $gray-lightest;
+    border: 0; 
+  }
+  .glyphicon {
+    font-size: 1.3em;
+  }
+  .search__group {
+    margin: 48px auto 0;
+    float: none;
+    padding: 0;
+    @include minMedia($screen-sm){
+      max-width: 500px;
+      margin-top: 0;
+    }
+  }
 }
