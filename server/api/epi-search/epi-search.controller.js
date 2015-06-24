@@ -4,7 +4,11 @@ var _ = require('lodash');
 var openFDA = require('../../components/services/openFDA');
 
 exports.index = function(req, res) {
-  var openFDAPath = openFDA.getPath(req);
+  var query = {};
+  if (req.query && req.query.search) {
+    query = JSON.parse(req.query.search);
+  }
+  var openFDAPath = openFDA.getPath(query);
 
   //TODO move this to config
   var options = {
@@ -20,7 +24,6 @@ exports.index = function(req, res) {
   openFDA.getJSON(options,
     function(statusCode, result)
     {
-      console.log("onResult: (" + statusCode + ")" + JSON.stringify(result));
       res.statusCode = statusCode;
       res.json(result); //res.send
     });
