@@ -38,13 +38,13 @@ exports.getJSON = function(options, onResult)
 exports.getPath = function(query)
 {
   //see https://open.fda.gov/api/reference/#query-syntax
- var field, i, j, len, len1, queryString, ref, ref1, term;
+ var field, j, len, len1, queryString, ref, ref1, term;
 
 
   queryString = '/drug/event.json?search=';
 
   ref = query.search.fields;
-  for (i = 0, len = ref.length; i < len; i++) {
+  for (var i = 0, len = ref.length; i < len; i++) {
     field = ref[i];
     if (field.isAnd) {
       queryString += '+AND+';

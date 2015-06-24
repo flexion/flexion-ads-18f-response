@@ -5,9 +5,8 @@ var openFDA = require('../../components/services/openFDA');
 
 exports.index = function(req, res) {
   var query = {};
-  if (req.query.search) {
+  if (req.query && req.query.search) {
     query = JSON.parse(req.query.search);
-    console.log(query);
   }
   var openFDAPath = openFDA.getPath(query);
 
