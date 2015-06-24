@@ -1,7 +1,6 @@
 'use strict'
 
-angular.module 'gsfFdaApp'
-.controller 'MainCtrl', ($scope, $http) ->
+angular.module('gsfFdaApp').controller 'MainCtrl', ($scope, $http) ->
   $scope.adverseReactions = []
 
   $scope.reset = ->
@@ -31,7 +30,6 @@ angular.module 'gsfFdaApp'
         count: field: 'receivedate'
 
       $http.get("/api/epi-search/?search=#{JSON.stringify query}").success (adverseReactions) ->
-        console.log(adverseReactions);
         $scope.adverseReactions = adverseReactions.results
 
   query = search:
@@ -41,6 +39,7 @@ angular.module 'gsfFdaApp'
         terms:[
           {term: "anti-epileptic"},
           {term: "agent"}
+          {term: '%QUERY'}
         ]
       },
       {
@@ -54,32 +53,18 @@ angular.module 'gsfFdaApp'
     count:
       field:"patient.drug.medicinalproduct"
 
+  engine = new Bloodhound
+    datumTokenizer: (d) -> Bloodhound.tokenizers.whitespace d.term
+    queryTokenizer: Bloodhound.tokenizers.whitespace
+    remote:
+      url: "/api/epi-search/?search=#{JSON.stringify query}"
+      filter: (response) -> response.results
 
-  $http.get("/api/epi-search/?search=#{JSON.stringify query}").success (result) ->
-    engine = new Bloodhound
-      datumTokenizer: (d) -> Bloodhound.tokenizers.whitespace(d.term)
-      queryTokenizer: (q) -> Bloodhound.tokenizers.whitespace
-      #local: result.results
-      local: [
-        { term: 'one' },
-        { term: 'two' },
-        { term: 'three' },
-        { term: 'four' },
-        { term: 'five' },
-        { term: 'six' },
-        { term: 'seven' },
-        { term: 'eight' },
-        { term: 'nine' },
-        { term: 'ten' }
-      ]
+  engine.initialize()
 
+  $scope.pharmaNames =
+    displayKey: 'term'
+    source: engine.ttAdapter()
 
-    engine.initialize()
-
-    $scope.pharmaNames =
-      displayKey: 'term',
-      source: engine.ttAdapter()
-    $scope.pharmaOptions =
-      highlight: true
-
-
+  $scope.pharmaOptions =
+    highlight: true
