@@ -1,9 +1,10 @@
-div(ng-include='"components/navbar/navbar.html"')
+div.disclaimer
+  div.alert.col-sm-12
+    p 
+      span.alert__icon
+      | The Anti-Epileptic Drug Search tool uses data obtained from OpenFDA. OpenFDA is a beta research project and not for clinical use.
 
-div.disclaimer.container
-  div.alert.col-sm-12(role="alert")
-    h2 Disclaimer
-    p The data provided is a sample of what can be done with the beta OpenFDA APIs. This was done for demonstration purposes and should not be used for diagnostics.
+div(ng-include='"components/navbar/navbar.html"')
 
 div.jumbotron
   div.container.search__group

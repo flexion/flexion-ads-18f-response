@@ -257,14 +257,26 @@ a:hover, a:focus {
 /* disclaimer */
 
 .disclaimer {
+  background: $gray;
+  overfloW: hidden;
   .alert {
-    background: lighten($brand-tertiary, 30%);
-    color: $brand-secondary;
-    border: 1px solid darken($brand-tertiary, 10%);
-    border-radius: 4px;
+    margin-bottom: 0;
+    padding: 5px 15px;
+    p {
+      text-align: center;
+      font-size: 12px;
+      color: $gray-darker;
+    }
   }
-  h2 {
-    margin-top: 0;
+  .alert__icon {
+    background: url(/assets/images/alert_icon.png) center center no-repeat;
+    width: 16px;
+    height: 16px;
+    position: relative;
+    top: 3px;
+    display: inline-block;
+    margin: 0 4px 0 0;
+    background-size: 100%;
   }
 }
 
