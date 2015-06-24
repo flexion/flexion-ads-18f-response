@@ -10,6 +10,9 @@ angular.module('gsfFdaApp').controller 'MainCtrl', ($scope, $http) ->
   $scope.search = (brandname) ->
     #todo move to a filter service
     if brandname
+      if brandname.term
+        brandname = brandname.term
+
       query = search:
         fields: [
           {
@@ -29,9 +32,11 @@ angular.module('gsfFdaApp').controller 'MainCtrl', ($scope, $http) ->
         ]
         count: field: 'receivedate'
 
+      #TODO move to a service - ideally a adverseReaction model
       $http.get("/api/epi-search/?search=#{JSON.stringify query}").success (adverseReactions) ->
         $scope.adverseReactions = adverseReactions.results
 
+  #start typeahead TODO move to a service
   query = search:
     fields: [
       {
@@ -52,6 +57,7 @@ angular.module('gsfFdaApp').controller 'MainCtrl', ($scope, $http) ->
     ],
     count:
       field:"patient.drug.medicinalproduct"
+
 
   engine = new Bloodhound
     datumTokenizer: (d) -> Bloodhound.tokenizers.whitespace d.term
