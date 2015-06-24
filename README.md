@@ -2,7 +2,7 @@
 
 ```
 git clone https://github.com/flexion/flexion-ads-18f-response.git
-checkout develop
+get checkout develop
 git pull
 npm install
 bower install
