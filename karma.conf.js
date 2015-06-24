@@ -19,8 +19,7 @@ module.exports = function(config) {
       'client/bower_components/angular-sanitize/angular-sanitize.js',
       'client/bower_components/angular-route/angular-route.js',
       'client/bower_components/typeahead.js/dist/bloodhound.js',
-      'client/bower_components/typeahead.js/dist/typeahead.bundle.js',
-      'client/bower_components/angular-typeahead.js/dist/angular-typeahead.js',
+      'client/bower_components/typeahead.js/dist/typeahead.jquery.js',
       'client/bower_components/angular-bootstrap/ui-bootstrap-tpls.js',
       'client/bower_components/lodash/dist/lodash.compat.js',
       'client/bower_components/angular-ui-router/release/angular-ui-router.js',
@@ -33,7 +32,8 @@ module.exports = function(config) {
       'client/app/**/*.jade',
       'client/components/**/*.jade',
       'client/app/**/*.html',
-      'client/components/**/*.html'
+      'client/components/**/*.html',
+      'client/bower_components/angular-typeahead/angular-typeahead.js'
     ],
 
     preprocessors: {
