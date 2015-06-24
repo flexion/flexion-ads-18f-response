@@ -152,3 +152,24 @@ body *{
     }
   }
 }
+
+/* footer */
+
+.footer {
+  text-align: center;
+  color: $gray-darker;
+  padding: 15px;
+  background: $gray;
+  border: none;
+  @media screen and (min-width: $screen-sm){
+    text-align: left;
+  }
+  p {
+    margin: 5px 0;
+  }
+  small, a {
+    font-size: 14px;
+    margin: 5px 10px;
+  }
+}
+
