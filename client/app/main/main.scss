@@ -1,5 +1,24 @@
 @import url(http://fonts.googleapis.com/css?family=Open+Sans:400,600);
 
+
+$primaryColor:          #9851cb;
+$secondaryColor:        #ee5f5c;
+$tertiaryColor:         #fec954;
+
+$gray-darker:            lighten(#000, 13.5%) !default; // #222
+$gray-dark:              #afaead !default;   // #333
+$gray2:                   #f8f8f5 !default; // #555
+$gray-light:             #fbfaf9 !default;   // #999
+$gray-lighter:           #fffdff !default; // #eee
+$gray-lightest:          #ffffff !default;
+$brand-primary:         $primaryColor !default;
+$brand-success:         #5cb85c !default;
+$brand-info:            #5bc0de !default;
+$brand-warning:         #f0ad4e !default;
+$brand-danger:          #d9534f !default;
+$brand-secondary:       $secondaryColor;
+$brand-tertiary:        $tertiaryColor;
+
 @mixin maxMedia($media){
   @media screen and (max-width: $media){
     @content;
@@ -80,7 +99,7 @@ body *{
     }
   }
   .title {
-    color: $brand-primary;
+    color: $primaryColor;
     position: relative;
     top: -6px;
 
@@ -118,13 +137,13 @@ body *{
 /* jumbotron/Search */
 .jumbotron {
   background: url(/assets/images/hero-mobile.jpg) center center no-repeat
-  $brand-primary;
+  $primaryColor;
   background-size: cover;
   min-height: 294px;
   overflow: hidden;
   @include minMedia($screen-xs){
     background: url(/assets/images/hero_image_desktop.jpg) center center no-repeat
-    $brand-primary;
+    $primaryColor;
     background-size: cover;
   }
   h1 {
