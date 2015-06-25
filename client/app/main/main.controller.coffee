@@ -33,37 +33,42 @@ angular.module('gsfFdaApp').controller 'MainCtrl', ($scope, $http) ->
         count: field: 'receivedate'
 
       #TODO move to a service - ideally a adverseReaction model
-      $http.get("/api/epi-search/?search=#{JSON.stringify query}").success (adverseReactions) ->
+      queryString = JSON.stringify query
+      $http.get("/api/epi-search/?search=#{window.btoa queryString}").success (adverseReactions) ->
         $scope.adverseReactions = adverseReactions.results
 
   #start typeahead TODO move to a service
-  query = search:
-    fields: [
-      {
-        field:"patient.drug.openfda.pharm_class_epc",
-        terms:[
-          {term: "anti-epileptic"},
-          {term: "agent"}
-          {term: '%QUERY'}
-        ]
-      },
-      {
-        field: "receivedate",
-        terms: [
-          {term: "[20140101+TO+20150101]"}
-        ],
-        isAnd: true
-      }
-    ],
-    count:
-      field:"patient.drug.medicinalproduct"
-
+  query =
+    search:
+      fields: [
+        {
+          field: "patient.drug.openfda.pharm_class_epc",
+          terms: [
+            {term: "anti-epileptic"},
+            {term: "agent"}
+            {term: '%QUERY'}
+          ]
+        },
+        {
+          field: "receivedate",
+          terms: [
+            {term: "[20140101+TO+20150101]"}
+          ],
+          isAnd: true
+        }
+      ],
+      count:
+        field: "patient.drug.medicinalproduct"
 
   engine = new Bloodhound
     datumTokenizer: (d) -> Bloodhound.tokenizers.whitespace d.term
     queryTokenizer: Bloodhound.tokenizers.whitespace
     remote:
-      url: "/api/epi-search/?search=#{JSON.stringify query}"
+      url: "/api/epi-search/?search="
+      replace: (url, brandname) ->
+        queryToSend = JSON.stringify(query).replace new RegExp('%QUERY', 'g'), brandname
+        url += "#{window.btoa queryToSend}"
+
       filter: (response) -> response.results
 
   engine.initialize()
