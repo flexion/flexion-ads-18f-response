@@ -13,10 +13,22 @@ div.jumbotron
           span.glyphicon.glyphicon-search(aria-hidden='true')
 .container
   .row
-    .col-lg-12
+    .col-md-8
       div.charts.results
-        div.chart__title {{ brandname }} Search Results
+        div.chart__title {{ brandname }} Serious Reactions
         svg.chart
+    .col-md-4
+      div.charts
+        div.chart__title Definitions
+        p Serious reactions include:
+        ul
+          li Death
+          li Life-threatening
+          li Hospitalization (initial or prolonged)
+          li Emergency room visit without hospital admission
+          li Disability or permanent damage
+          li Congenital anomaly/birth defect
+          li Required intervention to prevent permanent impairment or damage (devices)
 
 footer.footer
   p 

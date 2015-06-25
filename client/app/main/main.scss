@@ -187,14 +187,19 @@ a:hover, a:focus {
   padding: 15px;
   font-weight: 300;
 }
+.charts {
+  max-width: 100%;
+  margin: 20px 0;
+
+}
 .chart rect {
-  fill: steelblue;
+  fill: $primaryColor; 
 }
 
 .chart text {
-  fill: white;
-  font: 10px sans-serif;
-  text-anchor: end;
+  fill: $gray-darker;
+  font: 14px sans-serif;
+  text-anchor: middle;
 }
 .chart text.label {
   fill: black;
