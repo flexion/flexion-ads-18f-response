@@ -24,6 +24,11 @@ angular.module('gsfFdaApp').controller 'MainCtrl', ($scope, $http, usSpinnerServ
   $scope.startSpin = ->
     usSpinnerService.spin 'spinner-1'
 
+  colorCategory = d3.scale.category20()
+  $scope.colorFunction = ->
+    (d, i) ->
+      colorCategory(i)
+
   $scope.search = (brandname) ->
     $scope.adverseReactions = []
     $scope.errorMessage = ''
