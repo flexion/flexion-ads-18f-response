@@ -12,7 +12,7 @@ describe 'Controller: MainCtrl', ->
   # Initialize the controller and a mock scope
   beforeEach inject (_$httpBackend_, $controller, $rootScope) ->
     $httpBackend = _$httpBackend_
-    $httpBackend.expectGET('/api/epi-search/?search={"search":{"fields":[{"field":"brand_name","terms":[{"term":"lyrica"}]},{"field":"serious","terms":[{"term":"1"}],"isAnd":true},{"field":"receivedate","terms":[{"term":"[20140101+TO+20150101]"}],"isAnd":true}],"count":{"field":"receivedate"}}}').respond {
+    $httpBackend.expectGET(/^\/api\/epi-search\/\?search=.*/).respond {
       results:[
         {term: "term1", count: 1},
         {term: "term2", count: 2}

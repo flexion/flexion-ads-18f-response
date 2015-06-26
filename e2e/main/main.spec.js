@@ -8,6 +8,7 @@ describe('Main View', function() {
     page = require('./main.po');
   });
 
+  //TODO add e2e tests
   it('should include jumbotron with correct data', function() {
     expect(page.h1El.getText()).toBe('\'Allo, \'Allo!');
     expect(page.imgEl.getAttribute('src')).toMatch(/assets\/images\/yeoman.png$/);
