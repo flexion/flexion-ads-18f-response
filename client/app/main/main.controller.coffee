@@ -1,7 +1,6 @@
 'use strict'
 
-angular.module 'gsfFdaApp'
-.controller 'MainCtrl', ($scope, $http) ->
+angular.module('gsfFdaApp').controller 'MainCtrl', ($scope, $http) ->
   $scope.adverseReactions = []
 
   $scope.xAxisTickFormatFunction = ->
@@ -25,6 +24,9 @@ angular.module 'gsfFdaApp'
   $scope.search = (brandname) ->
     #todo move to a filter service
     if brandname
+      if brandname.term
+        brandname = brandname.term
+
       query = search:
         fields: [
           {
@@ -44,9 +46,11 @@ angular.module 'gsfFdaApp'
         ]
         count: field: 'receivedate'
 
-      $http.get("/api/epi-search/?search=#{JSON.stringify query}").success (adverseReactions) ->
+      #TODO move to a service - ideally a adverseReaction model
+      queryString = JSON.stringify query
+      $http.get("/api/epi-search/?search=#{window.btoa queryString}").success (adverseReactions) ->
         groupedByDateData = _.groupBy(adverseReactions.results, (result) ->
-          result.time.substring(0,6)
+            result.time.substring(0,6)
         )
 
         aggregateByDate = _.map(groupedByDateData, (result, time) ->
@@ -66,4 +70,45 @@ angular.module 'gsfFdaApp'
           data[0].values.push valuesArray
 
         $scope.adverseReactions = data
+  #start typeahead TODO move to a service
+  query =
+    search:
+      fields: [
+        {
+          field: "patient.drug.openfda.pharm_class_epc",
+          terms: [
+            {term: "anti-epileptic"},
+            {term: "agent"}
+            {term: '%QUERY'}
+          ]
+        },
+        {
+          field: "receivedate",
+          terms: [
+            {term: "[20140101+TO+20150101]"}
+          ],
+          isAnd: true
+        }
+      ],
+      count:
+        field: "patient.drug.medicinalproduct"
 
+  engine = new Bloodhound
+    datumTokenizer: (d) -> Bloodhound.tokenizers.whitespace d.term
+    queryTokenizer: Bloodhound.tokenizers.whitespace
+    remote:
+      url: "/api/epi-search/?search="
+      replace: (url, brandname) ->
+        queryToSend = JSON.stringify(query).replace new RegExp('%QUERY', 'g'), brandname
+        url += "#{window.btoa queryToSend}"
+
+      filter: (response) -> response.results
+
+  engine.initialize()
+
+  $scope.pharmaNames =
+    displayKey: 'term'
+    source: engine.ttAdapter()
+
+  $scope.pharmaOptions =
+    highlight: true

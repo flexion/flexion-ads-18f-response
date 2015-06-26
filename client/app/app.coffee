@@ -1,6 +1,7 @@
 'use strict'
 
 angular.module 'gsfFdaApp', [
+  'siyfion.sfTypeahead',
   'ngCookies',
   'ngResource',
   'ngSanitize',

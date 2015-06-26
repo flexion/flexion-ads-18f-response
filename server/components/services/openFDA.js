@@ -40,9 +40,7 @@ exports.getPath = function(query)
   //see https://open.fda.gov/api/reference/#query-syntax
  var field, j, len, len1, queryString, ref, ref1, term;
 
-
   queryString = '/drug/event.json?search=';
-
   ref = query.search.fields;
   for (var i = 0, len = ref.length; i < len; i++) {
     field = ref[i];
