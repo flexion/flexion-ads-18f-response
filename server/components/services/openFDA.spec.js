@@ -124,6 +124,39 @@ describe('openFDA.getPath', function() {
     done();
 
   });
+  it('should do a pharma name search', function(done) {
+    //drug/event.json?search=patient.drug.openfda.pharm_class_epc:anti-epileptic+agent+AND+receivedate:%5B20140101+TO+20150101%5D&count=patient.drug.medicinalproduct
+
+    var request5 = {
+      search: {
+        fields: [
+          {
+            field:"patient.drug.openfda.pharm_class_epc",
+            terms:[
+              {term: "anti-epileptic"},
+              {term: "agent"}
+            ]
+          },
+          {
+            field: "receivedate",
+            terms: [
+              {term: "[20140101+TO+20150101]"}
+            ],
+            isAnd: true
+          }
+        ],
+        count: {field:"patient.drug.medicinalproduct"}
+      }
+    };
+    var expectedResult = '/drug/event.json?search=patient.drug.openfda.pharm_class_epc:anti-epileptic+agent+AND+receivedate:[20140101+TO+20150101]&count=patient.drug.medicinalproduct';
+    var result = openFDA.getPath(request5);
+    result.should.be.instanceof(String);
+    result.should.equal(expectedResult);
+    done();
+
+  });
+
+
 
 
 });
