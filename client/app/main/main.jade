@@ -16,6 +16,8 @@ div.jumbotron
     .col-md-8
       div.charts.results
         div.chart__title {{ brandname | titleCase }} Serious Reactions
+        p
+          span(us-spinner='', spinner-key='spinner-1')
 
         nvd3-discrete-bar-chart#exampleId(data='adverseReactions',
           width='850', height='500', showxaxis='true', showyaxis='true',

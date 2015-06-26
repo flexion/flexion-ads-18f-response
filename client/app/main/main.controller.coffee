@@ -1,6 +1,6 @@
 'use strict'
 
-angular.module('gsfFdaApp').controller 'MainCtrl', ($scope, $http) ->
+angular.module('gsfFdaApp').controller 'MainCtrl', ($scope, $http, usSpinnerService) ->
   $scope.adverseReactions = []
 
   $scope.xAxisTickFormatFunction = ->
@@ -21,7 +21,12 @@ angular.module('gsfFdaApp').controller 'MainCtrl', ($scope, $http) ->
     $scope.adverseReactions = []
     $scope.brandname = ''
 
+  $scope.startSpin = ->
+    usSpinnerService.spin 'spinner-1'
+
   $scope.search = (brandname) ->
+    $scope.adverseReactions = []
+    $scope.errorMessage = ''
     #todo move to a filter service
     if brandname
       if brandname.term
@@ -48,24 +53,36 @@ angular.module('gsfFdaApp').controller 'MainCtrl', ($scope, $http) ->
 
       #TODO move to a service - ideally a adverseReaction model
       queryString = JSON.stringify query
-      $http.get("/api/epi-search/?search=#{window.btoa queryString}").success (adverseReactions) ->
-        groupedByDateData = _.groupBy adverseReactions.results, (result) ->
+      $http.get("/api/epi-search/?search=#{window.btoa queryString}")
+        .success (adverseReactions) ->
+          usSpinnerService.stop 'spinner-1'
+          $scope.adverseReactions = adverseReactions.results
+
+          $http.get("/api/epi-search/?search=#{window.btoa queryString}").success (adverseReactions) ->
+          groupedByDateData = _.groupBy adverseReactions.results, (result) ->
             result.time.substring(0,6)
 
-        aggregateByDate = _.map groupedByDateData, (result, time) ->
-          time: time
-          count: _.reduce result, (m, x) ->
-            m + x.count
-          , 0
+          aggregateByDate = _.map groupedByDateData, (result, time) ->
+            time: time
+            count: _.reduce result, (m, x) ->
+              m + x.count
+            , 0
 
-        data = [{key:"Serious Reactions", values: [] }]
-        for result in aggregateByDate
-          valuesArray = []
-          valuesArray.push result.time
-          valuesArray.push result.count
-          data[0].values.push valuesArray
+          data = [{key:"Serious Reactions", values: [] }]
+          for result in aggregateByDate
+            valuesArray = []
+            valuesArray.push result.time
+            valuesArray.push result.count
+            data[0].values.push valuesArray
 
-        $scope.adverseReactions = data
+          $scope.adverseReactions = data
+      .error (data, status, header, config) ->
+        usSpinnerService.stop 'spinner-1'
+        if data.error.code
+          $scope.errorMessage = data.error.message
+        else
+          $scope.errorMessage = 'There was a problem with your search.'
+
   #start typeahead TODO move to a service
   query =
     search:
