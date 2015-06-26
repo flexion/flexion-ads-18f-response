@@ -12,7 +12,7 @@ describe 'Controller: MainCtrl', ->
   # Initialize the controller and a mock scope
   beforeEach inject (_$httpBackend_, $controller, $rootScope) ->
     $httpBackend = _$httpBackend_
-    $httpBackend.expectGET(/^\/api\/epi-search\/\?search=.*/).respond {
+    $httpBackend.whenGET(/^\/api\/epi-search\/\?search=.*/).respond {
       results:[
         {time: "20040102", count: 1},
         {time: "20040103", count: 2}
