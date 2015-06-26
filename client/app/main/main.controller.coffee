@@ -49,18 +49,15 @@ angular.module('gsfFdaApp').controller 'MainCtrl', ($scope, $http) ->
       #TODO move to a service - ideally a adverseReaction model
       queryString = JSON.stringify query
       $http.get("/api/epi-search/?search=#{window.btoa queryString}").success (adverseReactions) ->
-        groupedByDateData = _.groupBy(adverseReactions.results, (result) ->
+        groupedByDateData = _.groupBy adverseReactions.results, (result) ->
             result.time.substring(0,6)
-        )
 
-        aggregateByDate = _.map(groupedByDateData, (result, time) ->
-          {
-            time: time
-            count: _.reduce(result, ((m, x) ->
-              m + x.count
-            ), 0)
-          }
-        )
+        aggregateByDate = _.map groupedByDateData, (result, time) ->
+          time: time
+          count: _.reduce result, (m, x) ->
+            m + x.count
+          , 0
+
         data = [{key:"Serious Reactions", values: [] }]
         for result in aggregateByDate
           valuesArray = []

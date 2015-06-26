@@ -2,8 +2,7 @@
 
 angular.module 'gsfFdaApp'
   .filter 'titleCase', ->
-    (input) ->
-      input = input or ''
+    (input = '') ->
       if input.term
         input = input.term
       input.replace(/\w\S*/g, (txt) ->
