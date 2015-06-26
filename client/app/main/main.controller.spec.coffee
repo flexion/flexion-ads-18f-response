@@ -14,8 +14,8 @@ describe 'Controller: MainCtrl', ->
     $httpBackend = _$httpBackend_
     $httpBackend.expectGET(/^\/api\/epi-search\/\?search=.*/).respond {
       results:[
-        {term: "term1", count: 1},
-        {term: "term2", count: 2}
+        {time: "20040102", count: 1},
+        {time: "20040103", count: 2}
       ]
     }
     scope = $rootScope.$new()
@@ -26,4 +26,4 @@ describe 'Controller: MainCtrl', ->
     it 'should attach a list of adverseReactions to the scope', ->
       scope.search('lyrica')
       $httpBackend.flush()
-      expect(scope.adverseReactions.length).toBe 2
+      expect(scope.adverseReactions).toBeDefined()

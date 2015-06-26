@@ -3,6 +3,20 @@
 angular.module('gsfFdaApp').controller 'MainCtrl', ($scope, $http, usSpinnerService) ->
   $scope.adverseReactions = []
 
+  $scope.xAxisTickFormatFunction = ->
+     (d) ->
+        dateString = d.replace(/(\d{4})(\d{2})/g, '$2/01/$1')
+        d3.time.format('%Y-%m')(new Date(dateString))
+
+  $scope.xFunction = ->
+    (d) ->
+      d[0]
+
+  format = d3.format(',.0f')
+  $scope.valueFormatFunction = ->
+    (d) ->
+      format(d)
+
   $scope.reset = ->
     $scope.adverseReactions = []
     $scope.brandname = ''
@@ -41,14 +55,33 @@ angular.module('gsfFdaApp').controller 'MainCtrl', ($scope, $http, usSpinnerServ
       queryString = JSON.stringify query
       $http.get("/api/epi-search/?search=#{window.btoa queryString}")
         .success (adverseReactions) ->
+          usSpinnerService.stop 'spinner-1'
           $scope.adverseReactions = adverseReactions.results
-          usSpinnerService.stop 'spinner-1'
-        .error (data, status, header, config) ->
-          usSpinnerService.stop 'spinner-1'
-          if data.error.code
-            $scope.errorMessage = data.error.message
-          else
-            $scope.errorMessage = 'There was a problem with your search.'
+
+          $http.get("/api/epi-search/?search=#{window.btoa queryString}").success (adverseReactions) ->
+          groupedByDateData = _.groupBy adverseReactions.results, (result) ->
+            result.time.substring(0,6)
+
+          aggregateByDate = _.map groupedByDateData, (result, time) ->
+            time: time
+            count: _.reduce result, (m, x) ->
+              m + x.count
+            , 0
+
+          data = [{key:"Serious Reactions", values: [] }]
+          for result in aggregateByDate
+            valuesArray = []
+            valuesArray.push result.time
+            valuesArray.push result.count
+            data[0].values.push valuesArray
+
+          $scope.adverseReactions = data
+      .error (data, status, header, config) ->
+        usSpinnerService.stop 'spinner-1'
+        if data.error.code
+          $scope.errorMessage = data.error.message
+        else
+          $scope.errorMessage = 'There was a problem with your search.'
 
   #start typeahead TODO move to a service
   query =

@@ -3,38 +3,50 @@ div(ng-include='"components/navbar/navbar.html"')
 div.jumbotron
   div.container.search__group
     h1.search__title Drug Database Search
-    form.search.input-group.input-group-lg(name='search__form',method='POST',action='/')
-      input#search.search__field.form-control(type='search', name='search')
+    form.search-form.input-group.input-group-lg(no-validate)
+      label.sr-only(for='search') Search
+      input#search.search__field.form-control(type='text', sf-typeahead, datasets='pharmaNames', options='pharmaOptions', ng-model='brandname')
       span.input-group-btn
-        button.search__button.btn.btn-default(type='button')
+        button.search__button.btn.btn-default(type='button',
+        ng-click='search(brandname)')
           span.sr-only Search Database
           span.glyphicon.glyphicon-search(aria-hidden='true')
 .container
   .row
-    .col-lg-12
-      h1.page-header Search for Adverse Reactions By Pharmaceutical Brand
-      form(no-validate).search-form
-        | Brand Name:&nbsp;
-        input(type='text', sf-typeahead datasets='pharmaNames' options='pharmaOptions' ng-model='brandname')
+    .col-md-8
+      div.charts.results
+        div.chart__title {{ brandname | titleCase }} Serious Reactions
         p
-        input(type='button', ng-click='reset()', value='Reset')
-        input(type='submit', ng-click='search(brandname);startSpin()', value='Search')
+          span(us-spinner='', spinner-key='spinner-1')
+
+        nvd3-discrete-bar-chart#exampleId(data='adverseReactions',
+          width='850', height='500', showxaxis='true', showyaxis='true',
+          tooltips='true', interactive='true',
+          xAxisTickFormat="xAxisTickFormatFunction()",
+          valueFormat="valueFormatFunction()",
+          showValues="true",
+          staggerLabels="true",
+          margin='{left:70,top:70,bottom:170,right:125}')
+          svg
 
 
-      p
-        span(us-spinner='', spinner-key='spinner-1')
-
-      ul.nav.nav-tabs.nav-stacked.col-md-4.col-lg-4.col-sm-6(ng-repeat='reaction in adverseReactions')
-        li
-          a(href='#', tooltip='{{reaction.time}}')
-            | time: {{reaction.time}} count: {{reaction.count}}
-      p(ng-show=(errorMessage != null))
-        | {{ errorMessage }}
-
+    .col-md-4
+      div.charts
+        div.chart__title Definitions
+        p Serious reactions include:
+        ul
+          li Death
+          li Life-threatening
+          li Hospitalization (initial or prolonged)
+          li Emergency room visit without hospital admission
+          li Disability or permanent damage
+          li Congenital anomaly/birth defect
+          li Required intervention to prevent permanent impairment or damage (devices)
 
 footer.footer
-  .container
-    p
-      | Flexion
-      = ' | '
-      a(href='http://flexion.us/') flexion.us
+  p
+    small &copy; 2015 Anti-Epileptic Drug Search
+    = ' | '
+    a(href='/privacy/') Privacy
+    = ' | '
+    a(href='/terms/') Terms

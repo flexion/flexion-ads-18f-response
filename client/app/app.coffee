@@ -7,6 +7,7 @@ angular.module 'gsfFdaApp', [
   'ngSanitize',
   'ui.router',
   'ui.bootstrap',
+  'nvd3ChartDirectives',
   'angularSpinner'
 
 ]
