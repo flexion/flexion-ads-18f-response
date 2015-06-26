@@ -18,12 +18,19 @@ div.jumbotron
         input(type='text', sf-typeahead datasets='pharmaNames' options='pharmaOptions' ng-model='brandname')
         p
         input(type='button', ng-click='reset()', value='Reset')
-        input(type='submit', ng-click='search(brandname)', value='Search')
+        input(type='submit', ng-click='search(brandname);startSpin()', value='Search')
+
+
+      p
+        span(us-spinner='', spinner-key='spinner-1')
 
       ul.nav.nav-tabs.nav-stacked.col-md-4.col-lg-4.col-sm-6(ng-repeat='reaction in adverseReactions')
         li
           a(href='#', tooltip='{{reaction.time}}')
             | time: {{reaction.time}} count: {{reaction.count}}
+      p(ng-show=(errorMessage != null))
+        | {{ errorMessage }}
+
 
 footer.footer
   .container

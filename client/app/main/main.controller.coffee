@@ -1,13 +1,18 @@
 'use strict'
 
-angular.module('gsfFdaApp').controller 'MainCtrl', ($scope, $http) ->
+angular.module('gsfFdaApp').controller 'MainCtrl', ($scope, $http, usSpinnerService) ->
   $scope.adverseReactions = []
 
   $scope.reset = ->
     $scope.adverseReactions = []
     $scope.brandname = ''
 
+  $scope.startSpin = ->
+    usSpinnerService.spin 'spinner-1'
+
   $scope.search = (brandname) ->
+    $scope.adverseReactions = []
+    $scope.errorMessage = ''
     #todo move to a filter service
     if brandname
       if brandname.term
@@ -34,8 +39,16 @@ angular.module('gsfFdaApp').controller 'MainCtrl', ($scope, $http) ->
 
       #TODO move to a service - ideally a adverseReaction model
       queryString = JSON.stringify query
-      $http.get("/api/epi-search/?search=#{window.btoa queryString}").success (adverseReactions) ->
-        $scope.adverseReactions = adverseReactions.results
+      $http.get("/api/epi-search/?search=#{window.btoa queryString}")
+        .success (adverseReactions) ->
+          $scope.adverseReactions = adverseReactions.results
+          usSpinnerService.stop 'spinner-1'
+        .error (data, status, header, config) ->
+          usSpinnerService.stop 'spinner-1'
+          if data.error.code
+            $scope.errorMessage = data.error.message
+          else
+            $scope.errorMessage = 'There was a problem with your search.'
 
   #start typeahead TODO move to a service
   query =

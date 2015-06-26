@@ -6,7 +6,8 @@ angular.module 'gsfFdaApp', [
   'ngResource',
   'ngSanitize',
   'ui.router',
-  'ui.bootstrap'
+  'ui.bootstrap',
+  'angularSpinner'
 
 ]
 .config ($stateProvider, $urlRouterProvider, $locationProvider) ->
