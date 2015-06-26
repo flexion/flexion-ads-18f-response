@@ -4,6 +4,20 @@ angular.module 'gsfFdaApp'
 .controller 'MainCtrl', ($scope, $http) ->
   $scope.adverseReactions = []
 
+  $scope.xAxisTickFormatFunction = ->
+     (d) ->
+        dateString = d.replace(/(\d{4})(\d{2})/g, '$2/01/$1')
+        d3.time.format('%Y-%m')(new Date(dateString))
+
+  $scope.xFunction = ->
+    (d) ->
+      d[0]
+
+  format = d3.format(',.0f')
+  $scope.valueFormatFunction = ->
+    (d) ->
+      format(d)
+
   $scope.reset = ->
     $scope.adverseReactions = []
     $scope.brandname = ''
@@ -31,32 +45,25 @@ angular.module 'gsfFdaApp'
         count: field: 'receivedate'
 
       $http.get("/api/epi-search/?search=#{JSON.stringify query}").success (adverseReactions) ->
-        $scope.adverseReactions = adverseReactions.results
-        data =  $scope.adverseReactions
-        height = 500
-        width = 750
-        x = d3.scale.linear().domain([
-          0
-          d3.max(data, (d) -> d.count)
-        ]).range([
-          0
-          height
-        ])
-        barWidth = width / data.length
-        chart = d3.select('.chart').html('').attr('height', height)
-          .attr('width', barWidth * data.length)
-          .attr("preserveAspectRatio", "xMinYMin meet")
-          .attr("viewBox", "0 0 750 500")
-        bar = chart.selectAll('g').data(data)
-          .enter().append('g').attr('transform', 
-          (d, i) -> 
-            'translate(' + i * barWidth + ', 0)'
+        groupedByDateData = _.groupBy(adverseReactions.results, (result) ->
+          result.time.substring(0,6)
         )
 
-        bar.append('rect').attr('height', (d) -> x(d.count))
-          .attr('y', (d) -> (height - x(d.count)))
-          .attr('width', barWidth - 1)
-        chart.append('text').attr('x', 0 )
-         .attr('y', height - 20 )
-         .attr('dy', '.35em').text(2014)
+        aggregateByDate = _.map(groupedByDateData, (result, time) ->
+          {
+            time: time
+            count: _.reduce(result, ((m, x) ->
+              m + x.count
+            ), 0)
+          }
+        )
+        console.log aggregateByDate
+        data = [{key:"Serious Reactions", values: [] }]
+        for result in aggregateByDate
+          valuesArray = []
+          valuesArray.push result.time
+          valuesArray.push result.count
+          data[0].values.push valuesArray
+
+        $scope.adverseReactions = data
 

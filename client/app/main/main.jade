@@ -16,7 +16,18 @@ div.jumbotron
     .col-md-8
       div.charts.results
         div.chart__title {{ brandname | uppercase }} Serious Reactions
-        svg.chart
+
+        nvd3-discrete-bar-chart#exampleId(data='adverseReactions',
+          width='850', height='500', showxaxis='true', showyaxis='true',
+          tooltips='true', interactive='true',
+          xAxisTickFormat="xAxisTickFormatFunction()",
+          valueFormat="valueFormatFunction()",
+          showValues="true",
+          staggerLabels="true",
+          margin='{left:70,top:70,bottom:170,right:125}')
+          svg
+
+
     .col-md-4
       div.charts
         div.chart__title Definitions
@@ -31,7 +42,7 @@ div.jumbotron
           li Required intervention to prevent permanent impairment or damage (devices)
 
 footer.footer
-  p 
+  p
     small &copy; 2015 Anti-Epileptic Drug Search
     = ' | '
     a(href='/privacy/') Privacy
