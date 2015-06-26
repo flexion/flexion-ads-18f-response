@@ -5,11 +5,11 @@ machine:
 dependencies:
   override:
     - docker info
-    - docker build -t flexion/flexion-ads-18f-response .
+    - docker build -t bdruth/flexion-ads-18f-response .
 
 test:
   override:
-    - docker run -d --name=grunt -p 49160:80 flexion/flexion-ads-18f-response; sleep 60
+    - docker run -d --name=grunt -p 49160:80 bdruth/flexion-ads-18f-response; sleep 60
     - docker logs -t grunt
     - curl --retry 10 --retry-delay 5 -v http://localhost:49160
 
