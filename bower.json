@@ -23,5 +23,10 @@
   "devDependencies": {
     "angular-mocks": ">=1.2.*",
     "angular-scenario": ">=1.2.*"
+  },
+  "resolutions": {
+    "angular": "1.4.1",
+    "d3": "3.5.5",
+    "nvd3": "~1.8.1"
   }
 }
