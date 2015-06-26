@@ -31,9 +31,6 @@ $brand-tertiary:        $tertiaryColor;
   }
 }
 
-$brand-secondary: #428bca !default;
-
-
 $font-family-sans-serif:  "Open Sans", sans-serif !default;
 body {
   font-family: $font-family-sans-serif;
@@ -232,7 +229,7 @@ a:hover, a:focus {
     background-size: cover;
   }
   h1 {
-    color: $gray-lighter;
+    color: $gray-lightest;
     font-size: 25px;
     @include minMedia($screen-sm){
     font-size: 37px;
@@ -240,8 +237,8 @@ a:hover, a:focus {
   }
   .search__button {
     background: $brand-secondary;
-    color: $gray-lighter;
-    border: 0;
+    color: $gray-lightest;
+    border: 0; 
   }
   .glyphicon {
     font-size: 1.3em;
@@ -257,78 +254,30 @@ a:hover, a:focus {
   }
 }
 
+/* disclaimer */
 
-/* site theme */
-/* ---------- */
-
-.typeahead,
-.tt-query,
-.tt-hint {
-  width: 396px;
-  height: 30px;
-  padding: 8px 12px;
-  font-size: 24px;
-  line-height: 30px;
-  border: 2px solid #ccc;
-  -webkit-border-radius: 8px;
-  -moz-border-radius: 8px;
-  border-radius: 8px;
-  outline: none;
-}
-
-.typeahead {
-  background-color: #fff;
-}
-
-.typeahead:focus {
-  border: 2px solid #0097cf;
-}
-
-.tt-query {
-  -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
-  -moz-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
-  box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
-}
-
-.tt-hint {
-  color: #999
-}
-
-.tt-menu {
-  width: 422px;
-  margin: 12px 0;
-  padding: 8px 0;
-  background-color: #fff;
-  border: 1px solid #ccc;
-  border: 1px solid rgba(0, 0, 0, 0.2);
-  -webkit-border-radius: 8px;
-  -moz-border-radius: 8px;
-  border-radius: 8px;
-  -webkit-box-shadow: 0 5px 10px rgba(0,0,0,.2);
-  -moz-box-shadow: 0 5px 10px rgba(0,0,0,.2);
-  box-shadow: 0 5px 10px rgba(0,0,0,.2);
-}
-
-.tt-suggestion {
-  padding: 3px 20px;
-  font-size: 18px;
-  line-height: 24px;
-}
-
-.tt-suggestion:hover {
-  cursor: pointer;
-  color: #fff;
-  background-color: #0097cf;
-}
-
-.tt-suggestion.tt-cursor {
-  color: #fff;
-  background-color: #0097cf;
-
-}
-
-.tt-suggestion p {
-  margin: 0;
+.disclaimer {
+  background: $gray;
+  overfloW: hidden;
+  .alert {
+    margin-bottom: 0;
+    padding: 5px 15px;
+    p {
+      text-align: center;
+      font-size: 12px;
+      color: $gray-darker;
+    }
+  }
+  .alert__icon {
+    background: url(/assets/images/alert_icon.png) center center no-repeat;
+    width: 16px;
+    height: 16px;
+    position: relative;
+    top: 3px;
+    display: inline-block;
+    margin: 0 4px 0 0;
+    background-size: 100%;
+  }
 }
 
 /* chart */
