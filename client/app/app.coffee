@@ -6,8 +6,8 @@ angular.module 'gsfFdaApp', [
   'ngResource',
   'ngSanitize',
   'ui.router',
-  'ui.bootstrap'
-
+  'ui.bootstrap',
+  'nvd3ChartDirectives'
 ]
 .config ($stateProvider, $urlRouterProvider, $locationProvider) ->
   $urlRouterProvider

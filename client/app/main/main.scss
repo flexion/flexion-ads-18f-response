@@ -147,6 +147,13 @@ body *{
 }
 
 
+a:link, a:visited {
+  color: $primaryColor;
+}
+a:hover, a:focus {
+  color: darken($primaryColor, 10%);
+  text-decoration: underline;
+}
 /* navbar */
 .navbar {
   margin-bottom: 5px;
@@ -204,6 +211,7 @@ body *{
       }
       a {
         min-height: 50px;
+        color: $primaryColor;
         padding: 20px 15px 12px;
       }
     }
@@ -322,3 +330,51 @@ body *{
 .tt-suggestion p {
   margin: 0;
 }
+
+/* chart */
+.chart__title {
+  background: $gray2;
+  color: $brand-secondary;
+  font-size: 42px;
+  line-height: 48px;
+  padding: 15px;
+  font-weight: 300;
+}
+.charts {
+  max-width: 100%;
+  margin: 20px 0;
+
+}
+.chart rect {
+  fill: $primaryColor;
+}
+
+.chart text {
+  fill: $gray-darker;
+  font: 14px sans-serif;
+  text-anchor: middle;
+}
+.chart text.label {
+  fill: black;
+}
+
+/* footer */
+
+.footer {
+  text-align: center;
+  color: $gray-darker;
+  padding: 15px;
+  background: $gray2;
+  border: none;
+  @media screen and (min-width: $screen-sm){
+    text-align: left;
+  }
+  p {
+    margin: 5px 0;
+  }
+  small, a {
+    font-size: 14px;
+    margin: 5px 10px;
+  }
+}
+
