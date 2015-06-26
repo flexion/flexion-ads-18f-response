@@ -6,7 +6,7 @@ angular.module('gsfFdaApp').controller 'MainCtrl', ($scope, $http, usSpinnerServ
   $scope.xAxisTickFormatFunction = ->
      (d) ->
         dateString = d.replace(/(\d{4})(\d{2})/g, '$2/01/$1')
-        d3.time.format('%Y-%m')(new Date(dateString))
+        d3.time.format('%b %Y')(new Date(dateString))
 
   $scope.xFunction = ->
     (d) ->
