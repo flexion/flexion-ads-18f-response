@@ -61,7 +61,6 @@ angular.module('gsfFdaApp').controller 'MainCtrl', ($scope, $http) ->
             ), 0)
           }
         )
-        console.log aggregateByDate
         data = [{key:"Serious Reactions", values: [] }]
         for result in aggregateByDate
           valuesArray = []
