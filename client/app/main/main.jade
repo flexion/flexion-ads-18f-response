@@ -5,7 +5,7 @@ div.jumbotron
     h1.search__title Drug Database Search
     form.search-form.input-group.input-group-lg(no-validate)
       label.sr-only(for='search') Search
-      input#search.search__field.form-control(type='text', ng-model='brandname')
+      input#search.search__field.form-control(type='text', sf-typeahead, datasets='pharmaNames', options='pharmaOptions', ng-model='brandname')
       span.input-group-btn
         button.search__button.btn.btn-default(type='button',
         ng-click='search(brandname)')
