@@ -1,5 +1,5 @@
 div.disclaimer
-  div.alert.col-sm-12
+  div.alert.col-sm-12(role="alert")
     p 
       span.alert__icon
       | The Anti-Epileptic Drug Search tool uses data obtained from OpenFDA. OpenFDA is a beta research project and not for clinical use.
@@ -11,7 +11,8 @@ div.jumbotron
     h1.search__title Drug Database Search
     form.search-form.input-group.input-group-lg(no-validate)
       label.sr-only(for='search') Search
-      input#search.search__field.form-control(type='text', sf-typeahead, datasets='pharmaNames', options='pharmaOptions', ng-model='brandname')
+      div.form-control(aria-live="assertive")
+        input#search.search__field(type='text', sf-typeahead, datasets='pharmaNames', options='pharmaOptions', ng-model='brandname')
       span.input-group-btn
         button.search__button.btn.btn-default(type='button',
         ng-click='search(brandname);startSpin()')
@@ -20,10 +21,10 @@ div.jumbotron
   div
     span(us-spinner='', spinner-key='spinner-1')
 
-.container
+main.container(role="main")
   .row
     .col-md-8
-      div.charts.results
+      div.charts.results(aria-live="polite", aria-atomic="true")
         div.chart__title {{ brandname | titleCase }} Serious Reactions
 
         nvd3-discrete-bar-chart#exampleId(data='adverseReactions',
@@ -39,19 +40,20 @@ div.jumbotron
 
 
     .col-md-4
-      div.charts
+      aside.charts(role="complementary")
         div.chart__title Definitions
-        p Serious reactions include:
-        ul
-          li Death
-          li Life-threatening
-          li Hospitalization (initial or prolonged)
-          li Emergency room visit without hospital admission
-          li Disability or permanent damage
-          li Congenital anomaly/birth defect
-          li Required intervention to prevent permanent impairment or damage (devices)
+        div.chart__body
+          p Serious reactions include:
+          ul
+            li Death
+            li Life-threatening
+            li Hospitalization (initial or prolonged)
+            li Emergency room visit without hospital admission
+            li Disability or permanent damage
+            li Congenital anomaly/birth defect
+            li Required intervention to prevent permanent impairment or damage (devices)
 
-footer.footer
+footer.footer(role="footer")
   p
     small &copy; 2015 Anti-Epileptic Drug Search
     = ' | '
