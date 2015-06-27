@@ -10,7 +10,7 @@ var https = require("https");
  */
 exports.getJSON = function(options, onResult)
 {
-  var prot = options.port == 443 ? https : http;
+  var prot = options.port === 443 ? https : http;
   var req = prot.request(options, function(res)
   {
     var output = '';
@@ -29,7 +29,8 @@ exports.getJSON = function(options, onResult)
   });
 
   req.on('error', function(err) {
-    res.send('error: ' + err.message);
+    //res.send('error: ' + err.message);
+    console.error('error: ' + err.message);
   });
 
   req.end();
@@ -38,7 +39,7 @@ exports.getJSON = function(options, onResult)
 exports.getPath = function(query)
 {
   //see https://open.fda.gov/api/reference/#query-syntax
- var field, j, len, len1, queryString, ref, ref1, term;
+ var field, j, len1, queryString, ref, ref1, term;
 
   queryString = '/drug/event.json?search=';
   ref = query.search.fields;
@@ -60,7 +61,7 @@ exports.getPath = function(query)
       } else {
         queryString += term.term;
       }
-      if (j+1 != len1) {
+      if (j+1 !== len1) {
         queryString += "+"
       }
     }
