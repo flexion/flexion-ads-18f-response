@@ -1,0 +1,7 @@
+[{
+  "image": "nginx",
+  "cpu": 10,
+  "memory": 250,
+  "essential": true,
+  "environment": []
+}]

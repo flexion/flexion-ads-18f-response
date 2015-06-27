@@ -1,10 +1,13 @@
 machine:
+  node:
+    version: v0.12.5
   services:
     - docker
 
 dependencies:
   override:
     - docker info
+    - npm install
     - docker build -t bdruth/flexion-ads-18f-response .
 
 test:
@@ -18,5 +21,6 @@ deployment:
     branch: develop
     commands:
       - docker login -e $DOCKER_EMAIL -u $DOCKER_USER -p $DOCKER_PASS
-      - docker push bdruth/flexion-ads-18f-response
+      - docker push bdruth/flexion-ads-18f-response:v_$CIRCLE_BUILD_NUM
+      - grunt deploy
       # Will change to flexion public repo when released.
