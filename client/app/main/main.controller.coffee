@@ -87,7 +87,8 @@ angular.module('gsfFdaApp').controller 'MainCtrl', ($scope, $http, usSpinnerServ
           $scope.errorMessage = data.error.message
         else
           $scope.errorMessage = 'Sorry! We did&rsquo;t find any data with that query. Please revise your search and try again.'
-
+    else
+      usSpinnerService.stop 'spinner-1' #nothing to search for
 
   #start typeahead TODO move to a service
   query =
