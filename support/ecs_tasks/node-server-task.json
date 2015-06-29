@@ -1,6 +1,7 @@
 [{
+  "name": "node-server",
   "image": "bdruth/flexion-ads-18f-response:<%= version %>",
-  "cpu": 10,
+  "cpu": 25,
   "memory": 250,
   "essential": true,
   "environment": []
