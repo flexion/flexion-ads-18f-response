@@ -1,6 +1,6 @@
 div.disclaimer
   div.alert.col-sm-12(role="alert")
-    p 
+    p
       span.alert__icon
       | The Anti-Epileptic Drug Search tool uses data obtained from OpenFDA. OpenFDA is a beta research project and not for clinical use.
 
@@ -25,7 +25,7 @@ main.container(role="main")
   .row
     .col-md-8
       div.charts.results(aria-live="polite", aria-atomic="true")
-        div.chart__title {{ brandname | titleCase }} Serious Reactions
+        div.chart__title {{ searchname | titleCase }} Serious Reactions
 
         nvd3-discrete-bar-chart#exampleId(data='adverseReactions',
           width='850', height='500', showxaxis='true', showyaxis='true',
