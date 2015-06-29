@@ -247,6 +247,7 @@ a:hover, a:focus {
   .search__field {
     border: 0;
     width: 100%;
+    background-color: $gray-lightest !important;
   }
   .search__button {
     background: $brand-secondary;
