@@ -20,6 +20,9 @@ angular.module('gsfFdaApp').controller 'MainCtrl', ($scope, $http, usSpinnerServ
   $scope.reset = ->
     $scope.adverseReactions = []
     $scope.brandname = ''
+    $scope.searchname = ''
+    usSpinnerService.stop 'spinner-1'
+
 
   $scope.startSpin = ->
     usSpinnerService.spin 'spinner-1'
@@ -34,6 +37,7 @@ angular.module('gsfFdaApp').controller 'MainCtrl', ($scope, $http, usSpinnerServ
     $scope.errorMessage = ''
     #todo move to a filter service
     if brandname
+      $scope.searchname = brandname
       if brandname.term
         brandname = brandname.term
 
