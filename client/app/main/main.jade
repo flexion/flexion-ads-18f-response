@@ -14,7 +14,7 @@ div.jumbotron
       div.form-control(aria-live="assertive")
         input#search.search__field(type='text', sf-typeahead, datasets='pharmaNames', options='pharmaOptions', ng-model='brandname')
       span.input-group-btn
-        button.search__button.btn.btn-default(type='button',
+        button.search__button.btn.btn-default(type='submit',
         ng-click='startSpin();search(brandname)')
           span.sr-only Search Database
           span.glyphicon.glyphicon-search(aria-hidden='true')

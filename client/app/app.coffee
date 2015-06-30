@@ -8,8 +8,8 @@ angular.module 'gsfFdaApp', [
   'ui.router',
   'ui.bootstrap',
   'nvd3ChartDirectives',
-  'angularSpinner'
-
+  'angularSpinner',
+  'ngAria'
 ]
 .config ($stateProvider, $urlRouterProvider, $locationProvider) ->
   $urlRouterProvider
