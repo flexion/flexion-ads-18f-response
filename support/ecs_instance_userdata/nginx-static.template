@@ -1,0 +1,3 @@
+#!/bin/bash
+
+echo ECS_CLUSTER=<%= config.cluster %> >> /etc/ecs/ecs.config

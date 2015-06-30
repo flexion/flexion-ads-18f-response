@@ -1,0 +1,14 @@
+#!/bin/bash
+
+cat >> /etc/ecs/ecs_config << DOCKERAUTH
+{
+  "auths": {
+    "DOCKERAUTH_URL": {
+      "auth": "<%= env.DOCKERAUTH_KEY %>",
+      "email": "<%= env.DOCKERAUTH_EMAIL %>"
+    }
+  }
+}
+DOCKERAUTH
+
+echo ECS_CLUSTER=<%= config.cluster %> >> /etc/ecs/ecs.config

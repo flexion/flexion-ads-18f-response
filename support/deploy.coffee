@@ -3,6 +3,7 @@ fs = require 'fs'
 path = require 'path'
 AWS = require 'aws-sdk'
 Promise = require 'bluebird'
+buffer = require 'buffer'
 
 inspect = (data) ->
   console.log JSON.stringify(data, null, 2)
@@ -13,6 +14,14 @@ inspect = (data) ->
 # Cloudformation templates
 
 class ECSDeploy
+  defaults:
+    nodes:
+      ami: 'ami-8da458e6'
+      instanceType: 't2.small'
+      min: 1
+      desired: 1
+      max: 2
+
   constructor: (config) ->
     @config = _.cloneDeep config
     AWS.config.region = @config.region
@@ -33,8 +42,12 @@ class ECSDeploy
     @route53 = new AWS.Route53()
     @ec2 = new AWS.EC2()
 
+    # Auto-scaling
+    @autoscaling = new AWS.AutoScaling()
+
     # Promisification through bluebird.
-    Promise.promisifyAll this[x] for x in ['ecs', 'elb', 'route53', 'ec2']
+    for x in ['ecs', 'elb', 'route53', 'ec2', 'autoscaling']
+      Promise.promisifyAll this[x]
 
     console.log "building task configs"
     _.each @config.services, (service) =>
@@ -42,18 +55,82 @@ class ECSDeploy
       service.task = task =
         name: "#{service.name}-task"
 
+      _.defaults service.nodes, @defaults.nodes
+
       @setTaskVersion task
       @buildTaskConfig task
 
-    @setupVPC()
+  setTaskVersion: (task) ->
+    task.version = process.env.CIRCLE_BUILD_NUM or 0
+
+  buildTaskConfig: (task) ->
+    console.log "buildTaskConfig(#{task.name})"
+    task_file = "#{path.resolve __dirname}/ecs_tasks/#{task.name}.json"
+    data = _.template fs.readFileSync(task_file), task
+    task.config = JSON.parse data
+
+  registerTaskDefinition: (task) ->
+    console.log "registerTaskDefinition(#{task.name})"
+    params =
+      containerDefinitions: task.config
+      family: task.name
+
+    @ecs.registerTaskDefinitionAsync(params).then (response) ->
+      console.log "response for #{task.name}:", response
+      if (taskDef = response?.taskDefinition)?
+        task.id = "#{taskDef.family}:#{taskDef.revision}"
+        return taskDef
+
+  # VPC Management
+
+  setupGateway: ->
+    console.log 'setupGateway()'
+    @findGateway().then (gateway) =>
+      return gateway if gateway?
+      @createGateway()
+    .then (gatewayId) =>
+      @config.vpc.gateway = gatewayId
+
+  findGateway: ->
+    console.log 'findGateway()'
+    params =
+      Filters: [
+        {
+          Name: 'attachment.vpc-id'
+          Values:  [@config.vpc.id]
+        }
+      ]
+
+    @ec2.describeInternetGatewaysAsync(params).then (response) =>
+      console.log 'Gateway found:', response
+      return null if response.InternetGateways.length is 0
+      config.vpc.gateway = response.InternetGateways[0].InternetGatewayId
+
+  createGateway: ->
+    console.log 'createGateway()'
+    @ec2.createInternetGatewayAsync({}).then (response) =>
+      do (gateway = response.InternetGateway) =>
+        id = gateway.InternetGatewayId
+
+        params =
+          InternetGatewayId: gateway.InternetGatewayId
+          VpcId: @config.vpc.id
+
+        @ec2.attachInternetGatewayAsync(params).then (response) ->
+          console.log 'gateway created.', response
+          @findGateway()
+
+
 
   setupVPC: ->
     console.log 'setupVPC()'
     @findVPC().then (vpcId) =>
-      if vpcId?
-        return @config.vpc.id = vpcId
+      return @config.vpc.id = vpcId if vpcId?
+
       @createVPC().then (vpcId) =>
         @config.vpc.id = vpcId
+    .then (vpcId) => @setupSubnet()
+    .then => @setupGateway()
 
   createVPC: ->
     console.log "createVPC()"
@@ -88,30 +165,249 @@ class ECSDeploy
     console.log 'findVPC params:', params.Filters
 
     @ec2.describeTagsAsync(params).then (response) ->
+      return null if response.Tags.length is 0
       console.log "response:", response
-      response.Tags?[0]?.ResourceId
+      response.Tags[0]?.ResourceId
 
-  setTaskVersion: (task) ->
-    task.version = process.env.CIRCLE_BUILD_NUM or 0
+  setupSubnet: ->
+    console.log 'setupSubnet()'
+    @findSubnet().then (subnet) =>
+      return subnet if subnet?
+      @createSubnet()
 
-  buildTaskConfig: (task) ->
-    console.log "buildTaskConfig(#{task.name})"
-    task_file = "#{path.resolve __dirname}/ecs_tasks/#{task.name}.json"
-    data = _.template fs.readFileSync(task_file), task
-    task.config = JSON.parse data
-    # task.config.name = task.name
-
-  registerTaskDefinition: (task) ->
-    console.log "registerTaskDefinition(#{task.name})"
+  findSubnet: ->
+    console.log "findSubnet..."
     params =
-      containerDefinitions: task.config
-      family: task.name
+      Filters: [
+        {
+          Name: 'vpc-id'
+          Values: [@config.vpc.id]
+        }
+      ]
 
-    @ecs.registerTaskDefinitionAsync(params).then (response) ->
-      console.log "response for #{task.name}:", response
-      if (taskDef = response?.taskDefinition)?
-        task.id = "#{taskDef.family}:#{taskDef.revision}"
-        return taskDef
+    @ec2.describeSubnetsAsync(params).then (response) =>
+      console.log "describeSubnets response", response
+      return null if response.Subnets.length is 0
+      return @config.subnet.id = response.Subnets[0].SubnetId
+
+  createSubnet: ->
+    console.log "createSubnet()"
+    params =
+      CidrBlock: @config.subnet.cidr
+      VpcId: @config.vpc.id
+
+    @ec2.createSubnetAsync(params).then (response) =>
+      if (id = response?.Subnet?.SubnetId)?
+        console.log "creating tag for new Subnet with ID: #{id}"
+        tags =
+          Resources: [id]
+          Tags: [
+            {
+              Key: 'Name'
+              Value: @config.subnet.name
+            }
+          ]
+        @ec2.createTagsAsync(tags).then (response) ->
+          console.log 'tagging response:', response
+          return id
+
+  deploy: ->
+    @setupVPC().then =>
+      @findOrCreateCluster().then (cluster) =>
+        current = Promise.cast()
+        _.each @config.services, (service) =>
+          current = current.then => @setupService service
+        current = current.then => return @config
+
+
+  setupService: (service) ->
+    @setupELB(service).then (elb) =>
+      console.log 'ELB:', elb
+      # @setupCNAME(service).then (cname) =>
+      @setupAutoScalingGroup(service).then (scalingGroup) =>
+        @registerTaskDefinition(service.task).then (taskDef) =>
+          @upsertService(service)
+
+  # ELB Management
+  setupELB: (service) ->
+    console.log "setupELB(#{service.name})"
+    unless service.nodes.ELB?
+      return new Promise (resolve) -> resolve()
+
+    @findELB(service).then (elb) =>
+      console.log 'findELB done. Response:', elb
+      return @createELB(service) unless elb?
+      @updateELB(service)
+
+  findELB: (service) ->
+    console.log "findELB(#{service.name})"
+    params =
+      LoadBalancerNames: ["#{@config.cluster}-elb-#{service.name}"]
+
+    console.log 'params:', params
+
+    @elb.describeLoadBalancersAsync(params).then (response) ->
+      console.log 'describeLoadBalancers response:', response
+      return null if response.LoadBalancerDescriptions.length is 0
+      console.log "ELB found:", response.LoadBalancerDescriptions[0]
+      _.extend service.nodes.ELB,
+        id: response.LoadBalancerDescriptions[0].DNSName
+        name: response.LoadBalancerDescriptions[0].LoadBalancerName
+    .catch (err) -> return null
+
+  createELB: (service) ->
+    console.log "createELB(#{service.name})"
+    params =
+      LoadBalancerName: "#{@config.cluster}-elb-#{service.name}"
+      Subnets: [@config.subnet.id]
+
+    _.extend params, service.nodes.ELB.config
+
+    console.log 'createELB params:', params
+
+    @elb.createLoadBalancerAsync(params).then (response) =>
+      console.log 'ELB created', response.DNSName
+      @findELB service
+
+  updateELB: (service) ->
+    console.log "updateELB(#{service.name})"
+    params =
+      LoadBalancerName: "#{@config.cluster}-elb-#{service.name}"
+
+    @elb.deleteLoadBalancerAsync(params).then (response) =>
+      console.log "ELB Deleted. Re-creating it."
+      @createELB service
+
+  setupCNAME: (service) ->
+
+  findCNAME: (service) ->
+
+  createCNAME: (service) ->
+
+  updateCNAME: (service) ->
+
+  setupAutoScalingGroup: (service) ->
+    console.log "setupAutoScalingGroup(#{service.name})"
+
+    @setupLaunchConfiguration(service).then (launchConfig) =>
+      service.nodes.launchConfig = launchConfig
+
+      @findAutoScalingGroup(service).then (ag) =>
+        return @createAutoScalingGroup(service) unless ag?
+        @updateAutoScalingGroup(service)
+
+  findAutoScalingGroup: (service) ->
+    console.log "findAutoScalingGroup(#{service.name})"
+    params =
+      AutoScalingGroupNames: ["#{@config.cluster}-auto-scaling-#{service.name}"]
+
+    @autoscaling.describeAutoScalingGroupsAsync(params).then (response) ->
+      return null if response.AutoScalingGroups.length is 0
+      console.log "AG found:", response.AutoScalingGroups[0]
+      return service.nodes.AutoScalingGroup = response.AutoScalingGroups[0]
+
+  createAutoScalingGroup: (service) ->
+    console.log "createAutoScalingGroup(#{service.name})"
+    params =
+      AutoScalingGroupName: "#{@config.cluster}-auto-scaling-#{service.name}"
+      MaxSize: service.nodes.max
+      MinSize: service.nodes.min
+      DesiredCapacity: service.nodes.desired
+      LaunchConfigurationName: service.nodes.launchConfig.LaunchConfigurationName
+      VPCZoneIdentifier: "#{@config.subnet.id}"
+
+    if service.nodes.ELB?
+      params.LoadBalancerNames = [service.nodes.ELB.name]
+
+    console.log 'request params:', params
+
+    @autoscaling.createAutoScalingGroupAsync(params).then (response) ->
+      console.log "Autoscaling group created. response:", response
+      response
+
+  updateAutoScalingGroup: (service) ->
+    console.log "updateAutoScalingGroup(#{service.name})"
+    params =
+      AutoScalingGroupName: "#{@config.cluster}-auto-scaling-#{service.name}"
+      MaxSize: service.nodes.max
+      MinSize: service.nodes.min
+      DesiredCapacity: service.nodes.desired
+      LaunchConfigurationName: service.nodes.launchConfig.LaunchConfigurationName
+      VPCZoneIdentifier: "#{@config.subnet.id}"
+
+    # if service.nodes.ELB?
+    #   params.LoadBalancerNames = [service.nodes.ELB.id]
+
+    @autoscaling.updateAutoScalingGroupAsync(params).then (response) =>
+      console.log "Autoscaling group updated. response:", response
+      @findAutoScalingGroup(service).then (ag) =>
+        console.log 'updated AG:', ag
+        if service.nodes.ELB?
+          unless ag.LoadBalancerNames?[0] is service.nodes.ELB.id
+            attachParams =
+              AutoScalingGroupName: "#{@config.cluster}-auto-scaling-#{service.name}"
+              LoadBalancerNames: [service.nodes.ELB.name]
+
+            @autoscaling.attachLoadBalancersAsync(attachParams).then =>
+              @findAutoScalingGroup service
+
+
+
+  # Auto-scaling Launch Configurations
+  setupLaunchConfiguration: (service) ->
+    console.log "setupLaunchConfiguration(#{service.name})"
+
+    @findLaunchConfiguration(service).then (launchConfig) =>
+      return @createLaunchConfiguration(service) unless launchConfig?
+      # @updateLaunchConfiguration(service)
+      launchConfig
+
+  findLaunchConfiguration: (service) ->
+    console.log "findLaunchConfiguration(#{service.name})"
+    params =
+      LaunchConfigurationNames: ["#{@config.cluster}-launch-#{service.name}"]
+
+    @autoscaling.describeLaunchConfigurationsAsync(params).then (response) ->
+      return null if response.LaunchConfigurations.length is 0
+      console.log "LaunchConfig found:", response.LaunchConfigurations[0]
+      service.launchConfig = response.LaunchConfigurations[0]
+
+  createLaunchConfiguration: (service) ->
+    console.log "createLaunchConfiguration(#{service.name})"
+    @extractUserData(service).then (userData) =>
+      params =
+        LaunchConfigurationName: "#{@config.cluster}-launch-#{service.name}"
+        ImageId: service.nodes.ami
+        UserData: userData
+        InstanceType: service.nodes.instanceType
+        InstanceMonitoring: {Enabled: false}
+
+      @autoscaling.createLaunchConfigurationAsync(params).then (response) =>
+        console.log "LaunchConfig created. response:", response
+        @findLaunchConfiguration(service)
+
+
+  updateLaunchConfiguration: (service) ->
+    console.log "updateLaunchConfiguration(#{service.name})"
+    params =
+      LaunchConfigurationName: "#{@config.cluster}-launch-#{service.name}"
+
+    @autoscaling.deleteLaunchConfigurationAsync(params).then (response) =>
+      console.log "LaunchConfig deleted. re-creating.", response
+      @createLaunchConfiguration(service)
+
+  extractUserData: (service) ->
+    console.log "extractUserData(#{service.name})"
+    new Promise (resolve, reject) =>
+      tpl = "#{path.resolve __dirname}/ecs_instance_userdata/#{service.name}.template"
+
+      payload =
+        config: @config
+        env: process.env
+
+      out = _.template fs.readFileSync(tpl), payload
+      console.log "userData: \n#{out}"
+      resolve new Buffer(out).toString 'base64'
 
   # Cluster Management
   findOrCreateCluster: ->
@@ -156,7 +452,7 @@ class ECSDeploy
     console.log "upsertService(#{service.name})"
     # TODO: register the service.taskDefinition first
     params =
-      desiredCount: service.nodes
+      desiredCount: service.nodes.desired
       taskDefinition: service.task.id
       cluster: @config.cluster
       # TODO: loadBalancer
@@ -182,38 +478,53 @@ class ECSDeploy
       op.then (serviceConfig) =>
         @setupELB(service)
 
-  setupELB: (service) ->
-    console.log "setupELB(#{service.name})"
-    return Promise.resolve() unless service.ELB is true
-
-
-
-###
-ELB Support:
-
-* If `elb` is `true` for a service, upsertLoadBalancer
-* createELB should also add a CNAME pointing to that ELB address
-* createELB and updateELB should also register service instances into the ELB.
-###
-
-###
-Autoscaling Group Support:
-
-* TODO: Learn about the autoscaling API.
-###
-
 config =
   region: 'us-east-1'
-  defaultInstance: 'flexion-18f-t2-small-ecs'
   cluster: 'flexion-18f'
   vpc:
     name: 'flexion-18f'
+    cidr: '10.10.0.0/16'
+  subnet:
+    name: 'flexion-18f-subnet1'
     cidr: '10.10.1.0/24'
   services: [
-    # Use only 1 node-server instance until I add support for setting up ELB.
-    {name: 'node-server', ELB: true, nodes: 1}
-    {name: 'nginx-static', ELB: true, nodes: 1}
-    {name: 'logstash', nodes: 1}
+    {
+      name: 'node-server'
+      nodes:
+        # ami: 'ami-e1c33f8a'
+        # instanceType: 't2.small'
+        # min: 1
+        # desired: 1
+        max: 10
+        ELB:
+          config:
+            Listeners: [{
+              InstancePort: 80
+              LoadBalancerPort: 80
+              # TODO: Add SSL support
+              Protocol: 'HTTP'
+              InstanceProtocol: 'HTTP'
+            }]
+    }
+
+    {
+      name: 'nginx-static'
+      nodes:
+        ELB:
+          config:
+            Listeners: [{
+              InstancePort: 80
+              LoadBalancerPort: 80
+              Protocol: 'HTTP'
+              InstanceProtocol: 'HTTP'
+            }]
+    }
+
+    {
+      name: 'logstash'
+      nodes:
+        max: 1
+    }
   ]
 
 do (ecs = new ECSDeploy(config), services = []) ->
@@ -221,13 +532,8 @@ do (ecs = new ECSDeploy(config), services = []) ->
   # AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_SESSION_TOKEN (optional)
   ecs.authenticate('deploy').fromProfile()
 
-  ecs.initialize().then (vpc) ->
-    inspect ecs.config
+  ecs.initialize()
+  inspect ecs.config
 
-    ecs.findOrCreateCluster().then (cluster) ->
-      _.each ecs.config.services, (service) ->
-        services.push ecs.registerTaskDefinition(service.task).then (taskDef) ->
-          ecs.upsertService(service)
-
-      Promise.all(services).then ->
-        console.log 'ECS deployment completed.'
+  ecs.deploy().then (config) ->
+    console.log 'ECS deployment completed.', inspect config
