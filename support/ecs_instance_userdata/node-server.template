@@ -3,7 +3,7 @@
 cat >> /etc/ecs/ecs_config << DOCKERAUTH
 {
   "auths": {
-    "DOCKERAUTH_URL": {
+    "<%= DOCKERAUTH_URL %>": {
       "auth": "<%= env.DOCKERAUTH_KEY %>",
       "email": "<%= env.DOCKERAUTH_EMAIL %>"
     }
