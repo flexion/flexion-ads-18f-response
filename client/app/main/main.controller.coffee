@@ -20,6 +20,9 @@ angular.module('gsfFdaApp').controller 'MainCtrl', ($scope, $http, usSpinnerServ
   $scope.reset = ->
     $scope.adverseReactions = []
     $scope.brandname = ''
+    $scope.searchname = ''
+    usSpinnerService.stop 'spinner-1'
+
 
   $scope.startSpin = ->
     usSpinnerService.spin 'spinner-1'
@@ -34,6 +37,7 @@ angular.module('gsfFdaApp').controller 'MainCtrl', ($scope, $http, usSpinnerServ
     $scope.errorMessage = ''
     #todo move to a filter service
     if brandname
+      $scope.searchname = brandname
       if brandname.term
         brandname = brandname.term
 
@@ -63,7 +67,6 @@ angular.module('gsfFdaApp').controller 'MainCtrl', ($scope, $http, usSpinnerServ
           usSpinnerService.stop 'spinner-1'
           $scope.adverseReactions = adverseReactions.results
 
-          $http.get("/api/epi-search/?search=#{window.btoa queryString}").success (adverseReactions) ->
           groupedByDateData = _.groupBy adverseReactions.results, (result) ->
             result.time.substring(0,6)
 
@@ -87,7 +90,8 @@ angular.module('gsfFdaApp').controller 'MainCtrl', ($scope, $http, usSpinnerServ
           $scope.errorMessage = data.error.message
         else
           $scope.errorMessage = 'Sorry! We did&rsquo;t find any data with that query. Please revise your search and try again.'
-
+    else
+      usSpinnerService.stop 'spinner-1' #nothing to search for
 
   #start typeahead TODO move to a service
   query =
