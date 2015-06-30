@@ -67,7 +67,6 @@ angular.module('gsfFdaApp').controller 'MainCtrl', ($scope, $http, usSpinnerServ
           usSpinnerService.stop 'spinner-1'
           $scope.adverseReactions = adverseReactions.results
 
-          $http.get("/api/epi-search/?search=#{window.btoa queryString}").success (adverseReactions) ->
           groupedByDateData = _.groupBy adverseReactions.results, (result) ->
             result.time.substring(0,6)
 
