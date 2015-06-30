@@ -1,6 +1,6 @@
 div.disclaimer
   div.alert.col-sm-12(role="alert")
-    p 
+    p
       span.alert__icon
       | The Anti-Epileptic Drug Search tool uses data obtained from OpenFDA. OpenFDA is a beta research project and not for clinical use.
 
@@ -15,7 +15,7 @@ div.jumbotron
         input#search.search__field(type='text', sf-typeahead, datasets='pharmaNames', options='pharmaOptions', ng-model='brandname')
       span.input-group-btn
         button.search__button.btn.btn-default(type='button',
-        ng-click='search(brandname);startSpin()')
+        ng-click='startSpin();search(brandname)')
           span.sr-only Search Database
           span.glyphicon.glyphicon-search(aria-hidden='true')
   div
