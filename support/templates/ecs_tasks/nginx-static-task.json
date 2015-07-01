@@ -4,5 +4,11 @@
   "cpu": 10,
   "memory": 250,
   "essential": true,
+  "portMappings": [
+    {
+      "hostPort": "80",
+      "containerPort": "80"
+    }
+  ],
   "environment": []
 }]
