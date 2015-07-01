@@ -10,17 +10,10 @@ angular.module 'gsfFdaApp'
   .state 'about',
     url: '/about/'
     templateUrl: 'app/main/about.html'
-    controller: 'AboutCtrl'
   .state 'contact',
     url: '/contact/'
     templateUrl: 'app/main/contact.html'
-    controller: 'ContactCtrl'
   .state 'terms',
-    url: '/terms/'
-    templateUrl: 'app/main/terms.html'
-    controller: 'TermsCtrl'
-  .state 'privacy',
-    url: '/privacy/'
-    templateUrl: 'app/main/privacy.html'
-    controller: 'PrivacyCtrl'
-
+    url: '/terms-and-privacy/'
+    templateUrl: 'app/main/terms-and-privacy.html'
+ 
