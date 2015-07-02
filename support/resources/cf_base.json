@@ -1,0 +1,152 @@
+{ "AWSTemplateFormatVersion" : "2010-09-09",
+  "Description" : "Infrastructure foundation stack for flexion-18f cluster",
+
+  "Parameters" : {
+  },
+
+  "Mappings" : {
+
+  },
+
+  "Conditions" : {
+
+  },
+  "Resources" : {
+    "FlexionVpc" : {
+      "Type" : "AWS::EC2::VPC",
+      "Properties" : {
+        "CidrBlock" : "10.0.0.0/16",
+        "EnableDnsSupport" : "true",
+        "EnableDnsHostnames" : "true"
+      }
+    },
+
+    "FlexionSubnetAz1" : {
+      "Type" : "AWS::EC2::Subnet",
+      "Properties" : {
+        "VpcId" : { "Ref" : "FlexionVpc" },
+        "CidrBlock" : "10.0.0.0/24",
+        "AvailabilityZone" : {
+          "Fn::Select" : [ "0", { "Fn::GetAZs" : { "Ref" : "AWS::Region" } } ]
+        }
+      }
+    },
+
+    "FlexionSubnetAz2" : {
+      "Type" : "AWS::EC2::Subnet",
+      "Properties" : {
+        "VpcId" : { "Ref" : "FlexionVpc" },
+        "CidrBlock" : "10.0.1.0/24",
+        "AvailabilityZone" : {
+          "Fn::Select" : [ "1", { "Fn::GetAZs" : { "Ref" : "AWS::Region" } } ]
+        }
+      }
+    },
+
+    "InternetGateway" : {
+      "Type" : "AWS::EC2::InternetGateway"
+    },
+
+    "AttachGateway" : {
+      "Type" : "AWS::EC2::VPCGatewayAttachment",
+      "Properties" : {
+        "VpcId" : { "Ref" : "FlexionVpc" },
+        "InternetGatewayId" : { "Ref" : "InternetGateway" }
+      }
+    },
+
+    "RouteViaIgw" : {
+      "Type" : "AWS::EC2::RouteTable",
+      "Properties" : {
+        "VpcId" : {"Ref" : "FlexionVpc"}
+      }
+    },
+
+    "PublicRouteViaIgw" : {
+      "Type" : "AWS::EC2::Route",
+      "Properties" : {
+        "RouteTableId" : { "Ref" : "RouteViaIgw" },
+        "DestinationCidrBlock" : "0.0.0.0/0",
+        "GatewayId" : { "Ref" : "InternetGateway" }
+      }
+    },
+
+    "FlexionSubnet1RouteTableAssociation" : {
+      "Type" : "AWS::EC2::SubnetRouteTableAssociation",
+      "Properties" : {
+        "SubnetId" : { "Ref" : "FlexionSubnetAz1" },
+        "RouteTableId" : { "Ref" : "RouteViaIgw" }
+      }
+    },
+
+    "FlexionSubnet2RouteTableAssociation" : {
+      "Type" : "AWS::EC2::SubnetRouteTableAssociation",
+      "Properties" : {
+        "SubnetId" : { "Ref" : "FlexionSubnetAz2" },
+        "RouteTableId" : { "Ref" : "RouteViaIgw" }
+      }
+    },
+
+    "ElbSecurityGroup" : {
+      "Type" : "AWS::EC2::SecurityGroup",
+      "Properties" : {
+        "GroupDescription" : "ELB Allowed Ports",
+        "VpcId" : { "Ref": "FlexionVpc"},
+        "SecurityGroupIngress" : [
+          { "IpProtocol" : "tcp", "FromPort" : "80", "ToPort" : "80",
+              "CidrIp" : "0.0.0.0/0" }
+        ]
+      }
+    },
+
+    "EcsSecurityGroup" : {
+      "Type" : "AWS::EC2::SecurityGroup",
+      "Properties" : {
+        "GroupDescription" : "ECS Allowed Ports",
+        "VpcId" : { "Ref": "FlexionVpc" },
+        "SecurityGroupIngress" : [
+          { "IpProtocol" : "tcp",
+            "FromPort" : "80",
+            "ToPort" : "80",
+            "CidrIp" : "0.0.0.0/0"
+          },
+          { "IpProtocol" : "tcp",
+            "FromPort" : "1",
+            "ToPort" : "65535",
+            "SourceSecurityGroupId" :  { "Ref" : "ElbSecurityGroup" }
+          }
+        ]
+      }
+    },
+
+    "FlexionCluster": {
+      "Type": "AWS::ECS::Cluster"
+    }
+  },
+  "Outputs" : {
+    "ECSClusterName" : {
+      "Description": "Name of the ECS cluster created for this network.",
+      "Value" : { "Ref" : "FlexionCluster" }
+    },
+    "Subnet1ID": {
+      "Description": "Availability zone 1 subnet ID.",
+      "Value": {"Ref": "FlexionSubnetAz1"}
+    },
+    "Subnet2ID": {
+      "Description": "Availability zone 2 subnet ID.",
+      "Value": {"Ref": "FlexionSubnetAz2"}
+    },
+    "SubnetIDs": {
+      "Description": "List of subnets for this network.",
+      "Value": {"Fn::Join" : [ ",", [{"Ref": "FlexionSubnetAz1"}, {"Ref": "FlexionSubnetAz2"}] ]}
+    },
+    "ElbSecurityGroup": {
+      "Description": "Name of the security group ELBs belong to.",
+      "Value": {"Ref": "ElbSecurityGroup"}
+    },
+    "EcsSecurityGroup": {
+      "Description": "Name of the security group the ECS agents belong to.",
+      "Value": {"Ref": "EcsSecurityGroup"}
+    }
+  }
+}

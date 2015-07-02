@@ -7,13 +7,6 @@ Promise = require 'bluebird'
 AWS = require './aws'
 
 module.exports = class ECSDeploy
-  defaults:
-    nodes:
-      ami: 'ami-8da458e6'
-      instanceType: 't2.micro'
-      min: 1
-      desired: 1
-      max: 2
 
   constructor: (config) ->
     @config = _.cloneDeep config
@@ -31,49 +24,28 @@ module.exports = class ECSDeploy
     # AWS Abstraction API
     @AWS = new AWS(@config)
 
-    console.log "building task configs"
-    _.each @config.services, (service) =>
-      service.cluster = @config.cluster
-      service.task = task =
-        name: "#{service.name}-task"
 
-      _.defaults service.nodes, @defaults.nodes
+  uploadS3Assets: ->
+    @AWS.S3.Bucket.setup(@config.S3.bucket).then (bucket) =>
+      uploads = Promise.cast()
+      for own key, file of @config.S3.files
+        do (key, file) =>
+          uploads = uploads.then => @AWS.S3.Bucket.upload bucket, file
+      uploads
 
-      @setTaskVersion task
-      @buildTaskConfig task
-
-  setTaskVersion: (task) ->
-    task.version = process.env.CIRCLE_BUILD_NUM or 0
-
-  buildTaskConfig: (task) ->
-    console.log "buildTaskConfig(#{task.name})"
-    task_file = path.join @config.templatesDir, 'ecs_tasks', "#{task.name}.json"
-    data = _.template fs.readFileSync(task_file), task
-    task.config = JSON.parse data
+  applyStacks: ->
+    return
+    stacks = Promise.cast()
+    for stack in @config.Stacks
+      do (stack) =>
+        stacks = stacks.then =>
+          console.log "Applying CloudFormation stack: #{stack.name}"
+          @AWS.CloudFormation.Stack.create(stack)
+    stacks
 
   deploy: ->
-    @AWS.EC2.VPC.setup()
-      .then @AWS.EC2.Subnet.setup
-      .then @AWS.EC2.InternetGateway.setup
-      .then @AWS.ECS.Cluster.setup
-      .then =>
-        current = Promise.cast()
-        _.each @config.services, (service) =>
-          current = current.then =>
-            @AWS.EC2.ELB.setup(service)
-              .then => @AWS.AutoScaling.LaunchConfiguration.setup(service)
-              .then => @AWS.AutoScaling.AutoScalingGroup.setup(service)
-              .then => @AWS.ECS.TaskDefinition.setup(service.task)
-              .then => @AWS.ECS.Service.setup(service)
-
-        current = current.then => return @config
-
-
-  # TODO: Route53 management.
-  setupCNAME: (service) ->
-
-  findCNAME: (service) ->
-
-  createCNAME: (service) ->
-
-  updateCNAME: (service) ->
+    @uploadS3Assets()
+      .then -> console.log 'S3 Assets uploaded.'
+      .then => @applyStacks()
+      # TODO: Collect stack outputs so we can get a link to the ELB IP.
+      .then => console.log "Deployment completed."

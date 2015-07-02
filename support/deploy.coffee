@@ -2,56 +2,30 @@ ECSDeploy = require './lib/ecs_deploy'
 path = require 'path'
 
 config =
-  templatesDir: path.join "#{path.resolve __dirname}", 'templates'
+  resources: resources = path.join "#{path.resolve __dirname}", 'resources'
+
   region: 'us-east-1'
-  cluster: 'flexion-18f'
-  vpc:
-    name: 'flexion-18f'
-    cidr: '10.10.0.0/16'
-  subnet:
-    name: 'flexion-18f-subnet1'
-    cidr: '10.10.1.0/24'
-  services: [
-    {
-      name: 'node-server'
-      nodes:
-        # ami: 'ami-e1c33f8a'
-        # instanceType: 't2.small'
-        # min: 1
-        # desired: 1
-        max: 10
-        ELB:
-          config:
-            Listeners: [{
-              InstancePort: 80
-              LoadBalancerPort: 80
-              # TODO: Add SSL support
-              Protocol: 'HTTP'
-              InstanceProtocol: 'HTTP'
-            }]
-    }
 
-    {
-      name: 'nginx-static'
-      nodes:
-        ELB:
-          config:
-            Listeners: [{
-              InstancePort: 80
-              LoadBalancerPort: 80
-              Protocol: 'HTTP'
-              InstanceProtocol: 'HTTP'
-            }]
-    }
+  S3:
+    bucket:
+      name: 'flexion-18f-deployment-assets'
 
-    {
-      name: 'logstash'
-      nodes:
-        max: 1
-    }
+    files: files =
+      cf_base:
+        key: "cf_base.template"
+        path: "#{resources}/cf_base.json"
+      cf_server:
+        key: "cf_node_server.template"
+        path: "#{resources}/cf_node_server.json"
+      cf_lambda:
+        compress: true
+        key: "cf_lookup_lambda.zip"
+        path: "#{resources}/cf_lookup_lambda.js"
+
+  Stacks: [
+    {name: 'flexion-18f-network', file: files.cf_base},
+    {name: 'flexion-18f-app-server', file: files.cf_server}
   ]
-
-
 
 do (ecs = new ECSDeploy(config), services = []) ->
   # Remove this if the following environment variables are set:

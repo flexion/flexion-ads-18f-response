@@ -1,3 +1,0 @@
-ECS_ENGINE_AUTH_TYPE=dockercfg
-ECS_ENGINE_AUTH_DATA={"<%= env.DOCKERAUTH_URL %>":{"auth":"<%= env.DOCKERAUTH_KEY %>","email":"<%= env.DOCKERAUTH_EMAIL %>"}}
-ECS_CLUSTER="<%= config.cluster %>"

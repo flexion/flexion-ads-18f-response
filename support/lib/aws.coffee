@@ -22,11 +22,22 @@ module.exports = class AWSHelper
     _.extend this, deps[id]
 
   promisifySDK: ->
-    apis = ['ECS', 'ELB', 'Route53', 'EC2', 'AutoScaling']
     out = {}
+    opts = {suffix: "_Async"}
+
+    apis = [
+      'ECS'
+      'ELB'
+      'Route53'
+      'EC2'
+      'AutoScaling'
+      'Lambda'
+      'CloudFormation'
+      'S3'
+    ]
 
     for api in apis
-      out[api.toLowerCase()] = new Promise.promisifyAll new SDK[api]()
+      out[api.toLowerCase()] = new Promise.promisifyAll new SDK[api](), opts
 
     out
 

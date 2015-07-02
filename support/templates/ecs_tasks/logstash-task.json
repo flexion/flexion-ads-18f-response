@@ -1,8 +1,0 @@
-[{
-  "name": "logstash",
-  "image": "logstash",
-  "cpu": 10,
-  "memory": 250,
-  "essential": true,
-  "environment": []
-}]
