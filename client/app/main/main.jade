@@ -1,6 +1,6 @@
 div.disclaimer
   div.alert.col-sm-12(role="alert")
-    p 
+    p
       span.alert__icon
       | The Anti-Epileptic Drug Search tool uses data obtained from OpenFDA. OpenFDA is a beta research project and not for clinical use.
 
@@ -14,8 +14,8 @@ div.jumbotron
       div.form-control(aria-live="assertive")
         input#search.search__field(type='text', sf-typeahead, datasets='pharmaNames', options='pharmaOptions', ng-model='brandname')
       span.input-group-btn
-        button.search__button.btn.btn-default(type='button',
-        ng-click='search(brandname);startSpin()')
+        button.search__button.btn.btn-default(type='submit',
+        ng-click='startSpin();search(brandname)')
           span.sr-only Search Database
           span.glyphicon.glyphicon-search(aria-hidden='true')
   div
@@ -25,7 +25,7 @@ main.container(role="main")
   .row
     .col-md-8
       div.charts.results(aria-live="polite", aria-atomic="true")
-        div.chart__title {{ brandname | titleCase }} Serious Reactions
+        div.chart__title {{ searchname | titleCase }} Serious Reactions
 
         nvd3-discrete-bar-chart#exampleId(data='adverseReactions',
           width='850', height='500', showxaxis='true', showyaxis='true',
@@ -35,7 +35,8 @@ main.container(role="main")
           showValues="true",
           staggerLabels="true",
           color="colorFunction()",
-          margin='{left:70,top:70,bottom:170,right:125}')
+          margin='{left:70,top:70,bottom:170,right:175}',
+          noData="Sorry! We didn't find any data with that query. Please revise your search and try again.")
           svg
 
 
@@ -53,10 +54,5 @@ main.container(role="main")
             li Congenital anomaly/birth defect
             li Required intervention to prevent permanent impairment or damage (devices)
 
-footer.footer(role="footer")
-  p
-    small &copy; 2015 Anti-Epileptic Drug Search
-    = ' | '
-    a(href='/privacy/') Privacy
-    = ' | '
-    a(href='/terms/') Terms
+div(ng-include='"components/footer/footer.html"')
+

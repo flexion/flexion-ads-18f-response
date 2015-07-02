@@ -6,3 +6,6 @@ public
 client/bower_components
 dist
 /server/config/local.env.js
+.bash_history
+.config
+.npm
