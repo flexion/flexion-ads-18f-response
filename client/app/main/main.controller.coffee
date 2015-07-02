@@ -93,17 +93,16 @@ angular.module('gsfFdaApp').controller 'MainCtrl', ($scope, $http, usSpinnerServ
     else
       usSpinnerService.stop 'spinner-1' #nothing to search for
 
-
   #start typeahead TODO move to a service
   query =
     search:
       fields: [
         {
-          field: "patient.drug.openfda.pharm_class_epc",
+          field: "patient.drug.openfda.pharm_class_epc"
           terms: [
-            {term: "anti-epileptic"},
+            {term: "anti-epileptic"}
             {term: "agent"}
-            {term: '%QUERY'}
+
           ]
         },
         {
@@ -120,14 +119,15 @@ angular.module('gsfFdaApp').controller 'MainCtrl', ($scope, $http, usSpinnerServ
   engine = new Bloodhound
     datumTokenizer: (d) -> Bloodhound.tokenizers.whitespace d.term
     queryTokenizer: Bloodhound.tokenizers.whitespace
-    remote:
-      url: "/api/epi-search/?search="
-      replace: (url, brandname) ->
-        queryToSend = JSON.stringify(query).replace new RegExp('%QUERY', 'g'), brandname
-        url += "#{window.btoa queryToSend}"
+    prefetch:
+      url: "/api/epi-search/?search=#{window.btoa(JSON.stringify query)}"
+      filter: (result) ->
+        result.results
 
-      filter: (response) -> response.results
+    limit: 10
+    minLength: 2
 
+  engine.clearPrefetchCache();
   engine.initialize()
 
   $scope.pharmaNames =
