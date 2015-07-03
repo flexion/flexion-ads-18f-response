@@ -2,7 +2,17 @@ Promise = require 'bluebird'
 AWSResource = require '../aws_resource'
 
 module.exports = class Stack extends AWSResource
+  setup: ->
+    @find.apply(this, arguments).then (response) ->
+      return null unless response?
+
   find: (stack) ->
+    @log "Stack.find(#{stack.name})"
+
+    @sdk.cloudformation.listStacks_Async().then (response) ->
+      for cfStack in response.StackSummaries
+        return cfStack if cfStack.StackName is stack.name
+      return null
 
   create: (stack) ->
     @log "Stack.create(#{stack.name}) - #{stack.file.location}"
@@ -20,6 +30,13 @@ module.exports = class Stack extends AWSResource
         @log 'Stack created', response.StackId
         @pollStack(response.StackId).then resolve
 
+  getLogicalResource: (stack, resourceId) ->
+    params =
+      StackName: stack.StackName
+      LogicalResourceId: resourceId
+
+    @sdk.cloudformation.describeStackResource_Async(params).then (response) ->
+      return response.StackResourceDetail
 
   pollStack: (stackId, token) ->
     do (stackId, token) =>

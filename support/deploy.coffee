@@ -6,6 +6,9 @@ config =
 
   region: 'us-east-1'
 
+  container:
+    image: "bdruth/flexion-ads-18f-response"
+
   S3:
     bucket:
       name: 'flexion-18f-deployment-assets'
