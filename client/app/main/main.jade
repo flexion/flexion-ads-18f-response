@@ -1,0 +1,58 @@
+div.disclaimer
+  div.alert.col-sm-12(role="alert")
+    p
+      span.alert__icon
+      | The Anti-Epileptic Drug Search tool uses data obtained from OpenFDA. OpenFDA is a beta research project and not for clinical use.
+
+div(ng-include='"components/navbar/navbar.html"')
+
+div.jumbotron
+  div.container.search__group
+    h1.search__title Drug Database Search
+    form.search-form.input-group.input-group-lg(no-validate)
+      label.sr-only(for='search') Search
+      div.form-control(aria-live="assertive")
+        input#search.search__field(type='text', sf-typeahead, datasets='pharmaNames', options='pharmaOptions', ng-model='brandname')
+      span.input-group-btn
+        button.search__button.btn.btn-default(type='submit',
+        ng-click='startSpin();search(brandname)')
+          span.sr-only Search Database
+          span.glyphicon.glyphicon-search(aria-hidden='true')
+  div
+    span(us-spinner='', spinner-key='spinner-1')
+
+main.container(role="main")
+  .row
+    .col-md-8
+      div.charts.results(aria-live="polite", aria-atomic="true")
+        div.chart__title {{ searchname | titleCase }} Serious Reactions
+
+        nvd3-discrete-bar-chart#exampleId(data='adverseReactions',
+          width='850', height='500', showxaxis='true', showyaxis='true',
+          tooltips='true', interactive='true',
+          xAxisTickFormat="xAxisTickFormatFunction()",
+          valueFormat="valueFormatFunction()",
+          showValues="true",
+          staggerLabels="true",
+          color="colorFunction()",
+          margin='{left:70,top:70,bottom:170,right:175}',
+          noData="Sorry! We didn't find any data with that query. Please revise your search and try again.")
+          svg
+
+
+    .col-md-4
+      aside.charts(role="complementary")
+        div.chart__title Definitions
+        div.chart__body
+          p Serious reactions include:
+          ul
+            li Death
+            li Life-threatening
+            li Hospitalization (initial or prolonged)
+            li Emergency room visit without hospital admission
+            li Disability or permanent damage
+            li Congenital anomaly/birth defect
+            li Required intervention to prevent permanent impairment or damage (devices)
+
+div(ng-include='"components/footer/footer.html"')
+
