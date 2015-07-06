@@ -30,7 +30,7 @@ This will download the required dependencies and build a docker image from the p
 ```
 docker run -d -p 10000:80 -i --name flexion-18f flexion-18f 
 ```
-The docker container runs the application on port 80, but sometimes it is convenient to map that to a different local port for testing.  The docker run command above maps the container port 80 to port 1000.  If you are running Boot2Docker for instance you will want to keep in mind that this mapping happens to the interface of the virtual machine being used to run the Docker containers, which can be found via `boot2docker ip`. 
+The docker container runs the application on port 80, but sometimes it is convenient to map that to a different local port for testing.  The docker run command above maps the container port 80 to port 10000.  If you are running Boot2Docker for instance you will want to keep in mind that this mapping happens to the interface of the virtual machine being used to run the Docker containers, which can be found via `boot2docker ip`. 
 
 ## Provisioning an Amazon EC2 instance
 
