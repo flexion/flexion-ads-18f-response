@@ -1,0 +1,97 @@
+├─ angular-bootstrap@0.11.2
+│  └─ licenses: UNKNOWN
+├─ angular-typeahead@0.2.3
+│  └─ licenses: UNKNOWN
+├─ angular-ui-router@0.2.15
+│  └─ licenses
+│     └─ 0: MIT*
+├─ d3@3.5.5
+│  └─ licenses
+│     └─ 0: MIT*
+├─ font-awesome@4.3.0
+│  ├─ licenses
+│  │  ├─ 0: OFL-1.1
+│  │  ├─ 1: MIT
+│  │  └─ 2: CC-BY-3.0
+│  └─ homepage: http://fontawesome.io
+├─ jquery@1.11.3
+│  └─ licenses
+│     └─ 0: MIT
+├─ json3@3.3.2
+│  ├─ licenses
+│  │  └─ 0: MIT
+│  ├─ repository
+│  │  ├─ type: git
+│  │  └─ url: git://github.com/bestiejs/json3.git
+│  └─ homepage: https://github.com/bestiejs/json3
+├─ nvd3@undefined
+│  ├─ licenses
+│  │  └─ 0: Apache License, v2.0
+│  └─ homepage: http://www.nvd3.org
+├─ lodash@2.4.2
+│  └─ licenses
+│     └─ 0: MIT*
+├─ spin.js@2.0.1
+│  ├─ licenses
+│  │  └─ 0: MIT*
+│  └─ repository
+│     ├─ type: git
+│     └─ url: git://github.com/fgnass/spin.js.git
+├─ angular@1.4.1
+│  ├─ licenses
+│  │  └─ 0: MIT
+│  └─ repository: git+https://github.com/angular/angular.js
+├─ angular-aria@1.4.1
+│  ├─ licenses
+│  │  └─ 0: MIT
+│  └─ repository: git+https://github.com/angular/angular.js
+├─ angular-cookies@1.4.1
+│  ├─ licenses
+│  │  └─ 0: MIT
+│  └─ repository: git+https://github.com/angular/angular.js
+├─ angular-mocks@1.4.1
+│  ├─ licenses
+│  │  └─ 0: MIT
+│  └─ repository: git+https://github.com/angular/angular.js
+├─ angular-resource@1.4.1
+│  ├─ licenses
+│  │  └─ 0: MIT
+│  └─ repository: git+https://github.com/angular/angular.js
+├─ angular-sanitize@1.4.1
+│  ├─ licenses
+│  │  └─ 0: MIT
+│  └─ repository: git+https://github.com/angular/angular.js
+├─ angular-scenario@1.4.1
+│  ├─ licenses
+│  │  └─ 0: MIT
+│  └─ repository: git+https://github.com/angular/angular.js
+├─ angular-spinner@0.6.1
+│  ├─ licenses
+│  │  └─ 0: MIT
+│  ├─ repository: git+ssh://git@github.com/urish/angular-spinner
+│  └─ homepage: https://github.com/urish/angular-spinner
+├─ angularjs-nvd3-directives@0.0.7
+│  ├─ licenses
+│  │  ├─ 0: Apache License, v2.0
+│  │  └─ 1: Apache*
+│  ├─ homepage: http://cmaurer.github.io/angularjs-nvd3-directives/
+│  └─ repository: git+https://github.com/cmaurer/angularjs-nvd3-directives
+├─ bootstrap@3.1.1
+│  ├─ licenses
+│  │  └─ 0: MIT
+│  └─ repository: git+https://github.com/twbs/bootstrap
+├─ es5-shim@3.0.2
+│  ├─ licenses
+│  │  └─ 0: MIT
+│  ├─ repository: git+ssh://git@github.com/es-shims/es5-shim
+│  └─ homepage: https://github.com/es-shims/es5-shim
+├─ bootstrap-sass@3.1.1
+│  ├─ licenses
+│  │  └─ 0: MIT
+│  ├─ homepage: https://github.com/twbs/bootstrap-sass
+│  └─ repository: https://github.com/twbs/bootstrap-sass
+└─ typeahead.js@0.10.5
+   ├─ licenses
+   │  └─ 0: MIT*
+   └─ repository: git+https://github.com/twitter/typeahead.js
+
