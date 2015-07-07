@@ -14,7 +14,7 @@ describe 'Controller: MainCtrl', ->
   # Initialize the controller and a mock scope
   beforeEach inject (_$httpBackend_, $controller, $rootScope) ->
     $httpBackend = _$httpBackend_
-    $httpBackend.expectGET(/^\/api\/epi-search\/\?api_key=1tng2lKHWL3Upt0LfvdyEsl82L5ROFYBgbfUAJHL&search=.*/).respond JSON.parse payload
+    $httpBackend.expectGET(/^\/api\/epi-search\/\?search=.*/).respond JSON.parse payload
     scope = $rootScope.$new()
     MainCtrl = $controller 'MainCtrl',
       $scope: scope
