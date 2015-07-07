@@ -36,7 +36,7 @@ describe('openFDA.getPath', function() {
   //https://api.fda.gov/drug/event.json?search=brand_name:lyrica+AND+receivedate:[20140101+TO+20150101]&count=receivedate
 
   it('should respond with a properly formatted query string', function(done) {
-    var expectedResult = '/drug/event.json?search=patient.drug.medicinalproduct:nonsteroidal+anti-inflammatory+drug';
+    var expectedResult = '/drug/event.json?api_key=1tng2lKHWL3Upt0LfvdyEsl82L5ROFYBgbfUAJHL&search=patient.drug.medicinalproduct:nonsteroidal+anti-inflammatory+drug';
     var result = openFDA.getPath(search);
     result.should.be.instanceof(String);
     result.should.equal(expectedResult);
@@ -44,7 +44,7 @@ describe('openFDA.getPath', function() {
   });
 
   it('should recognize an exact term and put quotes around it', function(done) {
-    var expectedResult = '/drug/event.json?search=patient.drug.openfda.pharm_class_epc:"nonsteroidal+anti-inflammatory+drug"&count=patient.reaction.reactionmeddrapt.exact';
+    var expectedResult = '/drug/event.json?api_key=1tng2lKHWL3Upt0LfvdyEsl82L5ROFYBgbfUAJHL&search=patient.drug.openfda.pharm_class_epc:"nonsteroidal+anti-inflammatory+drug"&count=patient.reaction.reactionmeddrapt.exact';
     var result = openFDA.getPath(request2);
     result.should.be.instanceof(String);
     result.should.equal(expectedResult);
@@ -52,7 +52,7 @@ describe('openFDA.getPath', function() {
   });
 
   it('should be able to add an exact count', function(done) {
-    var expectedResult = '/drug/event.json?search=patient.drug.openfda.pharm_class_epc:"nonsteroidal+anti-inflammatory+drug"&count=patient.reaction.reactionmeddrapt.exact';
+    var expectedResult = '/drug/event.json?api_key=1tng2lKHWL3Upt0LfvdyEsl82L5ROFYBgbfUAJHL&search=patient.drug.openfda.pharm_class_epc:"nonsteroidal+anti-inflammatory+drug"&count=patient.reaction.reactionmeddrapt.exact';
     var result = openFDA.getPath(request2);
     result.should.be.instanceof(String);
     result.should.equal(expectedResult);
@@ -82,7 +82,7 @@ describe('openFDA.getPath', function() {
       }
     };
 
-    var expectedResult = '/drug/event.json?search=brand_name:lyrica+AND+receivedate:[20140101+TO+20150101]&count=receivedate';
+    var expectedResult = '/drug/event.json?api_key=1tng2lKHWL3Upt0LfvdyEsl82L5ROFYBgbfUAJHL&search=brand_name:lyrica+AND+receivedate:[20140101+TO+20150101]&count=receivedate';
     var result = openFDA.getPath(request3);
     result.should.be.instanceof(String);
     result.should.equal(expectedResult);
@@ -117,7 +117,7 @@ describe('openFDA.getPath', function() {
         count: {field:"receivedate"}
       }
     };
-    var expectedResult = '/drug/event.json?search=brand_name:lyrica+AND+serious:1+AND+receivedate:[20140101+TO+20150101]&count=receivedate';
+    var expectedResult = '/drug/event.json?api_key=1tng2lKHWL3Upt0LfvdyEsl82L5ROFYBgbfUAJHL&search=brand_name:lyrica+AND+serious:1+AND+receivedate:[20140101+TO+20150101]&count=receivedate';
     var result = openFDA.getPath(request4);
     result.should.be.instanceof(String);
     result.should.equal(expectedResult);
@@ -148,7 +148,7 @@ describe('openFDA.getPath', function() {
         count: {field:"patient.drug.medicinalproduct"}
       }
     };
-    var expectedResult = '/drug/event.json?search=patient.drug.openfda.pharm_class_epc:anti-epileptic+agent+AND+receivedate:[20140101+TO+20150101]&count=patient.drug.medicinalproduct';
+    var expectedResult = '/drug/event.json?api_key=1tng2lKHWL3Upt0LfvdyEsl82L5ROFYBgbfUAJHL&search=patient.drug.openfda.pharm_class_epc:anti-epileptic+agent+AND+receivedate:[20140101+TO+20150101]&count=patient.drug.medicinalproduct';
     var result = openFDA.getPath(request5);
     result.should.be.instanceof(String);
     result.should.equal(expectedResult);
