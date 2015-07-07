@@ -1,0 +1,422 @@
+{ "AWSTemplateFormatVersion" : "2010-09-09",
+  "Description" : "Vistual containers stack for the flexion-18f prototype",
+
+  "Parameters" : {
+    "CFLookuplambdaBucket": {
+      "Description": "ID of the CloudFormation stack lookup lambda.",
+      "Type": "String",
+      "Default": "flexion-18f-deployment-assets"
+    },
+
+    "CFLookuplambdaKey": {
+      "Description": "ID of the CloudFormation stack lookup lambda.",
+      "Type": "String",
+      "Default": "cf_lookup_lambda.zip"
+    },
+
+    "NetworkStackName": {
+      "Description": "Name of an active CloudFormation stack that contains the networking resources, such as a subnet or security group, that will be used in this stack.",
+      "Type": "String",
+      "MinLength" : 1,
+      "MaxLength" : 255,
+      "AllowedPattern" : "^[a-zA-Z][-a-zA-Z0-9]*$",
+      "Default" : "flexion-18f-network"
+    },
+
+    "CreateElasticLoadBalancer" : {
+      "Type" : "String",
+      "Description" : "Optional : When set to true, creates a ELB for ECS Service",
+      "Default" : "true"
+    },
+
+    "DesiredCapacity": {
+      "Type": "Number",
+      "Default" : "1",
+      "Description": "Number of instances to launch in your ECS cluster"
+    },
+
+    "MaxSize": {
+      "Type": "Number",
+      "Default" : "8",
+      "Description": "Maximum number of instances that can be launched in your ECS cluster"
+    },
+
+    "InstanceType" : {
+      "Description" : "The EC2 instance type",
+      "Type" : "String",
+      "Default" : "t2.small",
+      "AllowedValues" : [ "t2.micro", "t2.small", "t2.medium", "m3.medium", "m3.large", "m3.xlarge",
+        "m3.2xlarge", "c3.large", "c3.xlarge", "c3.2xlarge", "c3.4xlarge", "c3.8xlarge", "c4.large", "c4.xlarge",
+        "c4.2xlarge", "c4.4xlarge", "c4.8xlarge", "r3.large", "r3.xlarge", "r3.2xlarge", "r3.4xlarge", "r3.8xlarge",
+        "i2.xlarge", "i2.2xlarge", "i2.4xlarge", "i2.8xlarge", "d2.xlarge", "d2.2xlarge", "d2.4xlarge", "d2.8xlarge",
+        "hi1.4xlarge", "hs1.8xlarge", "cr1.8xlarge", "cc2.8xlarge"],
+      "ConstraintDescription" : "must be a valid EC2 instance type."
+    }
+  },
+
+  "Mappings" : {
+    "AWSRegionToAMI" : {
+      "us-east-1"      : { "AMIID" : "ami-8da458e6" },
+      "us-west-2"      : { "AMIID" : "ami-db0306eb" },
+      "eu-west-1"      : { "AMIID" : "ami-7948320e" },
+      "ap-northeast-1" : { "AMIID" : "ami-fa12b7fa" },
+      "ap-southeast-2" : { "AMIID" : "ami-014f353b" }
+    }
+  },
+
+  "Conditions" : {
+    "CreateELB": { "Fn::Equals" : [ { "Ref" : "CreateElasticLoadBalancer" }, "true" ] }
+  },
+
+  "Resources" : {
+
+    "CFLookupLambda": {
+      "Type" : "AWS::Lambda::Function",
+      "Properties" : {
+        "Code" : {
+          "S3Bucket": {"Ref": "CFLookuplambdaBucket"},
+          "S3Key": {"Ref": "CFLookuplambdaKey"}
+        },
+        "Description" : "Cross-stack output lookup function",
+        "Handler" : "fn.handler",
+        "MemorySize" : "192",
+        "Role" : { "Fn::GetAtt" : ["LambdaExecutionRole", "Arn"] },
+        "Runtime" : "nodejs",
+        "Timeout" : "12"
+      }
+    },
+
+    "NetworkInfo": {
+      "DependsOn": ["CFLookupLambda"],
+      "Type": "Custom::NetworkInfo",
+      "Properties": {
+        "ServiceToken": { "Fn::GetAtt" : ["CFLookupLambda", "Arn"] },
+        "StackName": {"Ref": "NetworkStackName"}
+      }
+    },
+
+    "FlexionTaskDef": {
+      "Type": "AWS::ECS::TaskDefinition",
+      "Properties" : {
+        "ContainerDefinitions" : [
+          {
+            "Name": "flexion-18f-application-server",
+            "Environment": [{
+              "Name": "PORT",
+              "Value": "9000"
+            }],
+            "Command": ["grunt", "serve:dist"],
+            "Cpu": "500",
+            "Essential": "true",
+            "Image":"bdruth/flexion-ads-18f-response",
+            "Memory":"1600",
+            "PortMappings": [
+              { "HostPort": 80, "ContainerPort": 9000 }
+            ]
+          }
+        ]
+      }
+    },
+
+    "EcsElasticLoadBalancer" : {
+      "Condition" : "CreateELB",
+      "Type" : "AWS::ElasticLoadBalancing::LoadBalancer",
+      "Properties" : {
+        "SecurityGroups" : [ { "Fn::GetAtt": [ "NetworkInfo", "ElbSecurityGroup" ] } ],
+        "Subnets": [
+          { "Fn::GetAtt": [ "NetworkInfo", "Subnet1ID" ] },
+          { "Fn::GetAtt": [ "NetworkInfo", "Subnet2ID" ] }
+        ],
+        "CrossZone" : "true",
+        "Listeners" : [ {
+          "LoadBalancerPort" : "80",
+          "InstancePort" : "80",
+          "Protocol" : "HTTP"
+        } ],
+        "HealthCheck" : {
+          "Target" : "HTTP:80/",
+          "HealthyThreshold" : "2",
+          "UnhealthyThreshold" : "10",
+          "Interval" : "30",
+          "Timeout" : "5"
+        }
+      }
+    },
+
+    "FlexionInstanceLaunchConfig" : {
+      "Type" : "AWS::AutoScaling::LaunchConfiguration",
+      "Properties" : {
+        "ImageId" : { "Fn::FindInMap" : [ "AWSRegionToAMI", { "Ref" : "AWS::Region" }, "AMIID" ] },
+        "KeyName": "AWS Eastern",
+        "InstanceType"   : { "Ref" : "InstanceType" },
+        "AssociatePublicIpAddress" : true,
+        "IamInstanceProfile": { "Ref": "EC2InstanceProfile" },
+        "SecurityGroups" : [ { "Fn::GetAtt": [ "NetworkInfo", "EcsSecurityGroup" ] }],
+        "UserData" : { "Fn::Base64" : { "Fn::Join" : ["", [
+          "#!/bin/bash -xe\n",
+          "yum install -y aws-cfn-bootstrap\n",
+
+          "/opt/aws/bin/cfn-init -v ",
+          "         --stack ", { "Ref" : "AWS::StackName" },
+          "         --resource FlexionInstanceLaunchConfig ",
+          "         --region ", { "Ref" : "AWS::Region" }, "\n",
+
+          "/opt/aws/bin/cfn-signal -e $? ",
+          "         --stack ", { "Ref" : "AWS::StackName" },
+          "         --resource ECSAutoScalingGroup ",
+          "         --region ", { "Ref" : "AWS::Region" }, "\n",
+
+          "cat /etc/ecs/ecs.config\n"
+        ] ] } }
+      },
+      "Metadata" : {
+        "AWS::CloudFormation::Init" : {
+          "config" : {
+
+            "commands" : {
+              "01_add_instance_to_cluster" : {
+                "command" : { "Fn::Join": [ "", [
+                  "#!/bin/bash\n",
+                  "cat >> /etc/ecs/ecs.config <<DOCKERAUTH\n",
+                  "ECS_ENGINE_AUTH_TYPE=dockercfg\n",
+                  "ECS_ENGINE_AUTH_DATA={\"https://index.docker.io/v1/\":{\"auth\":\"YmRydXRoOmM2Q3FuQTh0bmRMdnomI1I3PWRBQDZSWEQ=\",\"email\":\"bruth@flexion.us\"}}\n",
+                  "ECS_CLUSTER=", { "Fn::GetAtt": [ "NetworkInfo", "ECSClusterName" ] }, "\n",
+                  "DOCKERAUTH\n"
+                ] ] }
+              }
+            },
+
+            "files" : {
+              "/etc/cfn/cfn-hup.conf" : {
+                "content" : { "Fn::Join" : ["", [
+                  "[main]\n",
+                  "stack=", { "Ref" : "AWS::StackId" }, "\n",
+                  "region=", { "Ref" : "AWS::Region" }, "\n"
+                ]]},
+                "mode"    : "000400",
+                "owner"   : "root",
+                "group"   : "root"
+              },
+              "/etc/cfn/hooks.d/cfn-auto-reloader.conf" : {
+                "content": { "Fn::Join" : ["", [
+                  "[cfn-auto-reloader-hook]\n",
+                  "triggers=post.update\n",
+                  "path=Resources.FlexionInstanceLaunchConfig.Metadata.AWS::CloudFormation::Init\n",
+                  "action=/opt/aws/bin/cfn-init -v ",
+                  "         --stack ", { "Ref" : "AWS::StackName" },
+                  "         --resource FlexionInstanceLaunchConfig ",
+                  "         --region ", { "Ref" : "AWS::Region" }, "\n",
+                  "runas=root\n"
+                ]]}
+              }
+            },
+
+            "services" : {
+              "sysvinit" : {
+                "cfn-hup" : { "enabled" : "true", "ensureRunning" : "true", "files" : ["/etc/cfn/cfn-hup.conf", "/etc/cfn/hooks.d/cfn-auto-reloader.conf"] }
+              }
+            }
+          }
+        }
+      }
+    },
+
+
+    "ECSAutoScalingGroup" : {
+      "Type" : "AWS::AutoScaling::AutoScalingGroup",
+      "Properties" : {
+        "AvailabilityZones" : [{ "Fn::Select" : [ "0", { "Fn::GetAZs" : { "Ref" : "AWS::Region" } } ] }, { "Fn::Select" : [ "1", { "Fn::GetAZs" : { "Ref" : "AWS::Region" } } ] }],
+        "VPCZoneIdentifier" : [
+          { "Fn::GetAtt": [ "NetworkInfo", "Subnet1ID" ] },
+          { "Fn::GetAtt": [ "NetworkInfo", "Subnet2ID" ] }
+        ],
+        "LaunchConfigurationName" : { "Ref" : "FlexionInstanceLaunchConfig" },
+        "MinSize" : "1",
+        "MaxSize" : { "Ref" : "MaxSize" },
+        "DesiredCapacity" : { "Ref" : "DesiredCapacity" },
+        "Tags" : [ { "Key" : "Name", "Value" : { "Fn::Join" : ["", [ "ECS Instance - ", { "Ref" : "AWS::StackName" } ] ] }, "PropagateAtLaunch" : "true" } ]
+      },
+      "CreationPolicy" : {
+        "ResourceSignal" : {
+          "Timeout" : "PT15M"
+        }
+      },
+      "UpdatePolicy": {
+        "AutoScalingRollingUpdate": {
+          "MinInstancesInService": "1",
+          "MaxBatchSize": "1",
+          "PauseTime" : "PT15M",
+          "WaitOnResourceSignals": "true"
+        }
+      }
+    },
+
+    "FlexionAppService": {
+      "Type": "AWS::ECS::Service",
+      "DependsOn": ["ECSAutoScalingGroup"],
+      "Properties" : {
+        "Cluster": { "Fn::GetAtt": [ "NetworkInfo", "ECSClusterName" ] },
+        "DesiredCount": "1",
+        "LoadBalancers": [
+          {
+            "ContainerName": "flexion-18f-application-server",
+            "ContainerPort": "9000",
+            "LoadBalancerName" : { "Ref" : "EcsElasticLoadBalancer" }
+          }
+        ],
+        "Role" : {"Ref":"ECSServiceRole"},
+        "TaskDefinition" : {"Ref":"FlexionTaskDef"}
+      }
+    },
+
+    "LambdaExecutionRole": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "Service": [
+                  "lambda.amazonaws.com"
+                ]
+              },
+              "Action": [
+                "sts:AssumeRole"
+              ]
+            }
+          ]
+        },
+
+        "Path": "/",
+        "Policies": [
+          {
+            "PolicyName": "lambda-policy",
+            "PolicyDocument": {
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "logs:*"
+                  ],
+                  "Resource": "arn:aws:logs:*:*:*"
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "cloudformation:DescribeStacks"
+                  ],
+                  "Resource": "*"
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+
+    "ECSServiceRole": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "Service": [
+                  "ecs.amazonaws.com"
+                ]
+              },
+              "Action": [
+                "sts:AssumeRole"
+              ]
+            }
+          ]
+        },
+        "Path": "/",
+        "Policies": [
+          {
+            "PolicyName": "ecs-service",
+            "PolicyDocument": {
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "elasticloadbalancing:Describe*",
+                    "elasticloadbalancing:DeregisterInstancesFromLoadBalancer",
+                    "elasticloadbalancing:RegisterInstancesWithLoadBalancer",
+                    "ec2:Describe*",
+                    "ec2:AuthorizeSecurityGroupIngress"
+                  ],
+                  "Resource": "*"
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+
+    "EC2Role": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "Service": [
+                  "ec2.amazonaws.com"
+                ]
+              },
+              "Action": [
+                "sts:AssumeRole"
+              ]
+            }
+          ]
+        },
+
+        "Path": "/",
+        "Policies": [
+          {
+            "PolicyName": "ecs-service",
+            "PolicyDocument": {
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "ecs:CreateCluster",
+                    "ecs:RegisterContainerInstance",
+                    "ecs:DeregisterContainerInstance",
+                    "ecs:DiscoverPollEndpoint",
+                    "ecs:Submit*",
+                    "ecs:Poll"
+                  ],
+                  "Resource": "*"
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+
+    "EC2InstanceProfile": {
+      "Type": "AWS::IAM::InstanceProfile",
+      "Properties": {
+        "Path": "/",
+        "Roles": [
+          {
+            "Ref": "EC2Role"
+          }
+        ]
+      }
+    }
+  },
+
+  "Outputs" : {
+    "ELB" : {
+      "Value" : { "Ref" : "EcsElasticLoadBalancer" }
+    }
+  }
+}
