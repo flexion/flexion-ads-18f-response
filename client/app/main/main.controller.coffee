@@ -54,7 +54,7 @@ angular.module('gsfFdaApp').controller 'MainCtrl', ($scope, $http, usSpinnerServ
           },
           {
             field: 'receivedate'
-            terms: [ { term: '[20140101+TO+20150101]' } ]
+            terms: [ { term: '[20150101+TO+20160101]' } ]
             isAnd: true
           }
         ]
@@ -108,7 +108,7 @@ angular.module('gsfFdaApp').controller 'MainCtrl', ($scope, $http, usSpinnerServ
         {
           field: "receivedate",
           terms: [
-            {term: "[20140101+TO+20150101]"}
+            {term: "[20150101+TO+20160101]"}
           ],
           isAnd: true
         }
