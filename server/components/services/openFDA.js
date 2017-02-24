@@ -41,7 +41,7 @@ exports.getPath = function(query)
   //see https://open.fda.gov/api/reference/#query-syntax
  var field, j, len1, queryString, ref, ref1, term;
   //TODO production app will read this from environment variable
-  queryString = '/drug/event.json?api_key=1tng2lKHWL3Upt0LfvdyEsl82L5ROFYBgbfUAJHL&search=';
+  queryString = '/drug/event.json?api_key=SnZ9SiOZ3U2z0DUjkF6BapavTTLeagFdOlra02AB&search=';
   ref = query.search.fields;
   for (var i = 0, len = ref.length; i < len; i++) {
     field = ref[i];
