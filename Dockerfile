@@ -5,10 +5,11 @@ USER root
 RUN apt-get update && apt-get install -y \
   git-core \
   bzip2 \
+  libssl-dev \
   ruby
 
 RUN gem install sass
-  
+
 RUN chown -R node .
 
 USER node
