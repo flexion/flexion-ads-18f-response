@@ -16,8 +16,8 @@
     "lodash": "~2.4.1",
     "angular-ui-router": "~0.2.10",
     "d3": "3.5.5",
-    "nvd3": "~1.8.1",
-    "angularjs-nvd3-directives": "~0.0.7",
+    "nvd3": "1.8.1",
+    "angularjs-nvd3-directives": "0.0.7",
     "angular-typeahead": "~0.2.3",
     "angular-spinner": "~0.6.1",
     "angular-aria": "1.4.1"
@@ -29,6 +29,6 @@
   "resolutions": {
     "angular": "1.4.1",
     "d3": "3.5.5",
-    "nvd3": "~1.8.1"
+    "nvd3": "1.8.1"
   }
 }
